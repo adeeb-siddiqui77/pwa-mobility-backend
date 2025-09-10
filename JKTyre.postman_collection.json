@@ -1,0 +1,146 @@
+{
+  "info": {
+    "name": "JK Tyre Backend API",
+    "_postman_id": "jktyre-demo-collection",
+    "description": "Collection for OTP, upload, onboarding, and payment link APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Send OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:4000/api/auth/send-otp",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "api",
+            "auth",
+            "send-otp"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"mobile\": \"9999999999\"}"
+        }
+      }
+    },
+    {
+      "name": "Verify OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:4000/api/auth/verify-otp",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "api",
+            "auth",
+            "verify-otp"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"mobile\": \"9999999999\", \"code\": \"123456\"}"
+        }
+      }
+    },
+    {
+      "name": "Upload File",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/api/prospect/upload",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "api",
+            "prospect",
+            "upload"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Onboard",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:4000/api/prospect/createOnBoard",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "api",
+            "prospect",
+            "createOnBoard"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"mobile\": \"9999999999\", \"fullName\": \"John\", \"shopName\": \"J Shop\", \"address\": \"Somewhere\", \"upi\": \"john@upi\", \"files\": []}"
+        }
+      }
+    },
+    {
+      "name": "Generate Payment Link",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:4000/api/prospect/generate-paymentLink",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "api",
+            "prospect",
+            "generate-paymentLink"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"upi\": \"john@upi\"}"
+        }
+      }
+    }
+  ]
+}
