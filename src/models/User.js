@@ -10,19 +10,15 @@ const userSchema = new mongoose.Schema({
     },
     pin: {
         type: String,
-        required: true
     },
     fullName: {
         type: String,
-        required: true
     },
     shopName: {
         type: String,
-        required: true
     },
     address: {
         type: String,
-        required: true
     },
     businessDays: [
         {
@@ -31,37 +27,95 @@ const userSchema = new mongoose.Schema({
     ],
     timeFrom: {
         type: String,
-        required: true
     },
     timeTo: {
         type: String,
-        required: true
     },
     upi: {
         type: String,
-        required: true
     },
     // Adding file upload fields
     adharCard: {
         type: String, // This will store the file path or URL
-        required: true
+      
     },
     loiForm: {
-        type: String,
-        required: true
+        type: String
     },
     kycImage: {
-        type: String,
-        required: true
+        type: String
     },
     qrCode: {
-        type: String,
-        required: true
+        type: String
     },
     isFirstLogin: {
         type: Boolean,
         default: true
     },
+
+
+    // Extra fields from Excel, all optional
+    dateOfOnboarding: { type: Date, required: false },
+    jkmfClosedInActiveDate: { type: Date, required: false },
+    jkmfRegNoNew: { type: String, required: false },
+    jkmfUniqueName: { type: String, required: false },
+    location: { type: String, required: false },
+    jkmfInHubHighway: { type: String, required: false },
+    dedicatedToWhichFleet: { type: String, required: false },
+    loiAvailable: { type: Boolean, required: false },
+    status: { type: String, required: false },
+    inActiveReason: { type: String, required: false },
+    zone: { type: String, required: false },
+    zonalCoordinator: { type: String, required: false },
+    ownerName: { type: String, required: false },
+    primaryContactNo: { type: String, required: false },
+    secondaryContactNo: { type: String, required: false },
+    postalAddress: { type: String, required: false },
+    pinCode: { type: String, required: false },
+    state: { type: String, required: false },
+    district: { type: String, required: false },
+    googleMapsLocation: { type: String, required: false },
+    lat: { type: Number, required: false },
+    long: { type: Number, required: false },
+    recommendedBy: { type: String, required: false },
+    lastVehicleAttendedOn: { type: Date, required: false },
+    servicesFirstSep23Today: { type: Number, required: false },
+    bdsAttendedByHDTill30Apr24: { type: Number, required: false },
+    bdsAttendedByHDTill30Apr24_31Oct24: { type: Number, required: false },
+    servicesTill31Aug23: { type: Number, required: false },
+    attendedByHDTill31May25From1Nov24: { type: Number, required: false },
+    totalServices: { type: Number, required: false },
+    callingStatusAsOnAug23: { type: String, required: false },
+    callingRemarks: { type: String, required: false },
+    capableForTLTyre: { type: Boolean, required: false },
+    haveSpecificTools: { type: Boolean, required: false },
+    tShirtSize: { type: String, required: false },
+    shoeSize: { type: String, required: false },
+    shopCategory: { type: String, required: false },
+    panCard: { type: String, required: false },
+    aadharCardNumber: { type: String, required: false },
+    nameAsPerBank: { type: String, required: false },
+    bankName: { type: String, required: false },
+    bankAccountNumber: { type: String, required: false },
+    ifscCode: { type: String, required: false },
+    accountStatus: { type: String, required: false },
+    eligibilityFor1stReward: { type: Boolean, required: false },
+    firstRewardStatus: { type: String, required: false },
+    newRewardsStatus: { type: String, required: false },
+    billBookStatus: { type: String, required: false },
+    firstRewardDeliveryDate: { type: Date, required: false },
+    rewardCycle: { type: String, required: false },
+    eligibilityFor2ndReward: { type: Boolean, required: false },
+    certificate: { type: String, required: false },
+    secondRewardStatus: { type: String, required: false },
+    secondRewardDeliveryDate: { type: Date, required: false },
+    secondRewardCycle: { type: String, required: false },
+    eligibilityFor3rdReward: { type: Boolean, required: false },
+    thirdRewardStatus: { type: String, required: false },
+    thirdRewardDeliveryDate: { type: Date, required: false },
+    thirdRewardCycle: { type: String, required: false },
+    eligibilityFor4thReward: { type: Boolean, required: false },
+    eligibilityFor5thReward: { type: Boolean, required: false },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin'

@@ -395,25 +395,165 @@ router.get('/users', protect, adminOnly, async (req, res) => {
 
 // rate Card
 
-router.post('/rateCard/create' , protect , adminOnly ,async(req,res)=>{
+router.post('/rateCard/create', protect, async (req, res) => {
   try {
-    const { tyreService, unit , normalRate , tubelessRate } = req.body;
-    
-    const newRateCard= new RateCard({
-      tyreService , unit , normalRate, tubelessRate
-    })
-    
+    const rateCards = Array.isArray(req.body) ? req.body : [req.body];
+
+    // Validate each entry if needed (optional step)
+    const newRateCards = rateCards.map(item => ({
+      tyreService: item.tyreService,
+      unit: item.unit,
+      normalRate: item.normalRate,
+      tubelessRate: item.tubelessRate
+    }));
+
+    const insertedRateCards = await RateCard.insertMany(newRateCards);
+
     return res.status(200).json({
       success: true,
-      message: 'User PIN reset successfully'
+      message: 'Rate Card Entries Created!',
+      count: insertedRateCards.length,
+      rateCards: insertedRateCards.map(card => ({ id: card._id, tyreService: card.tyreService }))
     });
+
   } catch (error) {
-    console.error('Reset PIN error:', error);
+    console.error('Rate card creation error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to reset PIN'
+      message: 'Failed to create rateCard entries'
     });
   }
-})
+});
+
+router.get('/rateCard', protect, async (req, res) => {
+  try {
+    const rateCards = await RateCard.find().sort({ tyreService: 1 }); // Sorted by tyreService
+
+    return res.status(200).json({
+      success: true,
+      count: rateCards.length,
+      rateCards: rateCards.map(card => ({
+        id: card._id,
+        tyreService: card.tyreService,
+        unit: card.unit,
+        normalRate: card.normalRate,
+        tubelessRate: card.tubelessRate
+      }))
+    });
+  } catch (error) {
+    console.error('Rate card fetch error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch rate card entries'
+    });
+  }
+});
+
+
+
+
+// BULK UPLOAD FOR USER FROM EXCEL
+
+router.post('/user/bulk-upload', upload.single('excelFile'), async (req, res) => {
+  try {
+      if (!req.file) {
+          return res.status(400).json({
+              success: false,
+              message: 'Excel file is required'
+          });
+      }
+
+      const filePath = req.file.path;
+
+      // Read the file using fs
+      const fileBuffer = fs.readFileSync(filePath);
+
+      // Parse the Excel file
+      const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet);
+
+      if (rows.length === 0) {
+          return res.status(400).json({
+              success: false,
+              message: 'Excel file is empty'
+          });
+      }
+
+      const usersToInsert = [];
+
+      for (const row of rows) {
+          const mobile = row['Primary Contact No'] || row['mobile'] || '';
+          const pin = row['PIN Code'] || row['pin'] || '';
+          const fullName = row['ownerName'] || row['fullName'] || '';
+          const shopName = row['shopName'] || row['jkmfUniqueName'] || '';
+          const address = row['postalAddress'] || row['address'] || '';
+
+          if (!mobile || !pin || !fullName || !shopName || !address) {
+              console.warn(`Skipping row due to missing required fields:`, row);
+              continue;
+          }
+
+          const existingUser = await User.findOne({ mobile });
+          if (existingUser) {
+              console.warn(`User with mobile ${mobile} already exists. Skipping.`);
+              continue;
+          }
+
+          const newUser = new User({
+              mobile,
+              pin,
+              fullName,
+              shopName,
+              address,
+              businessDays: [],
+              timeFrom: '',
+              timeTo: '',
+              upi: '',
+              adharCard: row['aadharCardNumber'] || '',
+              loiForm: '',
+              kycImage: '',
+              qrCode: '',
+              isFirstLogin: true,
+              createdBy: req.user._id,
+              // Include additional fields if needed
+          });
+
+          usersToInsert.push(newUser);
+      }
+
+      if (usersToInsert.length === 0) {
+          return res.status(400).json({
+              success: false,
+              message: 'No valid users to insert from the Excel file'
+          });
+      }
+
+      await User.insertMany(usersToInsert);
+
+      // Optionally delete the uploaded file
+      fs.unlink(filePath, err => {
+          if (err) {
+              console.error('Error deleting file:', err);
+          } else {
+              console.log('Uploaded file deleted:', filePath);
+          }
+      });
+
+      return res.status(201).json({
+          success: true,
+          message: `${usersToInsert.length} users have been uploaded successfully`
+      });
+
+  } catch (error) {
+      console.error('Bulk upload error:', error);
+      return res.status(500).json({
+          success: false,
+          message: 'An error occurred during bulk upload'
+      });
+  }
+});
+
 
 export default router;
