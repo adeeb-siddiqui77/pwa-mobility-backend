@@ -9,6 +9,8 @@
     "seed:admin": "node src/scripts/seedAdmin.js"
   },
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.4.2",
+    "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",

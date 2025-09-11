@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
+import zohoRoutes from './routes/zoho.js';
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware
 app.use(cors({
   origin: "*",
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -26,7 +28,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+// app.use('/api/users', require('./routes/users.js'));
 app.use('/api/auth', authRoutes);
+app.use('/api/zoho', zohoRoutes);
 
 // Root route
 app.get('/', (req, res) => {
