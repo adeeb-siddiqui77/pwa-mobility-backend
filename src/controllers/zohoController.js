@@ -78,7 +78,7 @@ dotenv.config();
 
 export const getMechanicTickets = async (req, res) => {
     try {
-        const mechanicId = new mongoose.Types.ObjectId(req.query.mechanicId);
+        const mechanicId = new mongoose.Types.ObjectId(req.params.id);
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
         const skip = (page - 1) * limit;
@@ -89,7 +89,6 @@ export const getMechanicTickets = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-    
         const totalTickets = await Ticket.countDocuments({ mechanicId });
 
         res.json({
@@ -119,9 +118,8 @@ export const getTickets = async (req, res) => {
             expiresAt: req.query.expiresAt
 
         }
-        console.log("Token details in getTickets:", tokenDetails, req.body);
+
         const validaccessToken = await getValidAccessToken(tokenDetails);
-        console.log("Valid access token:", validaccessToken);
         const config = {
             method: 'get',
             url: 'https://desk.zoho.in/api/v1/tickets',
@@ -135,7 +133,7 @@ export const getTickets = async (req, res) => {
         };
 
         const response = await axios(config);
-        console.log(response.data);
+
         response.data.tokenDetails = validaccessToken;
         return res.status(200).json({
             data: response.data,
@@ -193,8 +191,8 @@ export const createTicket = async (req, res) => {
         });
 
         res.status(201).json({
-           data : mongoTicket.data,
-           message : "Ticket created successfully"
+            data: mongoTicket.data,
+            message: "Ticket created successfully"
         });
     } catch (error) {
         console.error('Error creating ticket:', error);

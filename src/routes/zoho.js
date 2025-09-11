@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/tickets', getTickets);
 
 // Route to get tickets (protected by authentication)
-router.get('/tickets/mechanic', getMechanicTickets);
+router.get('/tickets/mechanic/:id', getMechanicTickets);
 
 // Route to create a new ticket (protected by authentication)
 router.post('/tickets', createTicket);
