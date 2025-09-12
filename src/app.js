@@ -4,6 +4,8 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
 import zohoRoutes from './routes/zoho.js';
+import userRoutes from './routes/users.js';
+import driverRoutes from './routes/driver.js';
 
 // Load environment variables
 dotenv.config();
@@ -28,9 +30,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-// app.use('/api/users', require('./routes/users.js'));
+app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/zoho', zohoRoutes);
+app.use('/api/driver', driverRoutes);
 
 // Root route
 app.get('/', (req, res) => {
