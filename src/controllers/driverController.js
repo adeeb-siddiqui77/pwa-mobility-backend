@@ -48,8 +48,7 @@ export const sendOtpByVehicleNo = async (req, res) => {
 export const sendOtpByPhone = async (req, res) => {
   try {
     const { phoneNo } = req.query;
-    console.log("vehicleNo", vehicleNo);
-    const driver = await Driver.findOne({ vehicleNo });
+    const driver = await Driver.findOne({ driverPhone: phoneNo });
 
     if (!driver) {
       return res.status(404).json({ error: "Driver not found" });
