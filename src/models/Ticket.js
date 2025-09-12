@@ -13,16 +13,7 @@ const ticketSchema = new mongoose.Schema({
     },
     entitySkills: [String],
     subCategory: String,
-    cf: {
-        cf_permanentaddress: String,
-        cf_dateofpurchase: Date,
-        cf_phone: String,
-        cf_numberofitems: String,
-        cf_url: String,
-        cf_secondaryemail: String,
-        cf_severitypercentage: String,
-        cf_modelname: String
-    },
+    cf: Object,
     productId: String,
     contactId: String,
     subject: String,
