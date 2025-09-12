@@ -1,5 +1,5 @@
 import Driver from "../models/Driver.js";
-import { sendSms } from "../services/otpService.js";
+import { sendSms, sendWhatsAppMessage } from "../services/otpService.js";
 import crypto from "crypto";
 
 // 1️⃣ Check driver exists by phone number
@@ -47,15 +47,16 @@ export const sendOtpByVehicleNo = async (req, res) => {
 
 export const sendOtpByPhone = async (req, res) => {
   try {
-    const { phoneNo } = req.query;
-    const driver = await Driver.findOne({ driverPhone: phoneNo });
+    const { phone, services} = req.body;
+    const driver = await Driver.findOne({ driverPhone: phone });
 
     if (!driver) {
       return res.status(404).json({ error: "Driver not found" });
     }
 
     // Generate 6 digit OTP
-    const otpValue = crypto.randomInt(100000, 999999).toString();
+   
+    const otpValue = crypto.randomInt(1000, 10000).toString()
 
     await Driver.updateOne(
       { _id: driver._id },
@@ -63,7 +64,7 @@ export const sendOtpByPhone = async (req, res) => {
     );
 
     // Send SMS
-    await sendSms(phoneNo, otpValue);
+    await sendWhatsAppMessage(phone, `Your Happy Code is ${otpValue}`);
     // await sendSms("9058007777", otpValue);
 
     return res.json({ success: true, message: "OTP sent successfully" });
@@ -104,7 +105,6 @@ export const verifyOtpForDriver = async (req, res) => {
 export const verifyOtpForMechanic = async (req, res) => {
   try {
     const { phoneNo, otp } = req.query;
-    console.log("vehicleNo", vehicleNo, otp);
     const driver = await Driver.findOne({ driverPhone: phoneNo });
 
     if (!driver) {
