@@ -45,10 +45,12 @@ const getDrivingDistance = async (origin, destinations) => {
                     }
                 );
 
+                console.log("Google Maps Routes API response:", response.data);
+
                 if (response.data.routes && response.data.routes[0]) {
                     const route = response.data.routes[0];
                     results.push({
-                        distance: route.distanceMeters / 1000, // Convert to kilometers
+                        distance: route?.distanceMeters ? route.distanceMeters/1000 : 0, // Convert to kilometers
                         duration: route.duration ? parseInt(route.duration.replace('s', '')) / 60 : null // Convert to minutes
                     });
                 } else {
@@ -162,11 +164,11 @@ export const findNearestUsers = async (req, res) => {
         // Sort by driving distance if available, otherwise use straight-line distance
         const sortedUsers = usersWithDrivingDistance
             .sort((a, b) => {
-                const distA = a.drivingDistance || a.straightLineDistance;
-                const distB = b.drivingDistance || b.straightLineDistance;
+                const distA = a.drivingDuration? a.drivingDuration : a.drivingDistance
+                const distB = b.drivingDuration? b.drivingDuration : a.drivingDistance
                 return distA - distB;
             })
-            .slice(0, 3); // Return only top 3 nearest users
+            .slice(0, 1); // Return only top 3 nearest users
 
         res.json({
             message: 'Nearest users found successfully',

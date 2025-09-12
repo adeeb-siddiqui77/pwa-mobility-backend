@@ -11,7 +11,6 @@ const ticketSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    // Zoho ticket fields
     entitySkills: [String],
     subCategory: String,
     cf: {
@@ -39,7 +38,24 @@ const ticketSchema = new mongoose.Schema({
     category: String,
     email: String,
     status: String,
-    // Additional custom fields for our system
+    preRepairPhotos : [
+        {
+            type : String
+        }
+    ],
+    postRepairPhotos : [
+        {
+            type : String
+        }
+    ],
+    workDetails : {
+        tyreType : {type : String},
+        services : [{type : String}],
+        patchType : {type : String},
+        patchNumber : {type : String},
+        otherServices : {type : String}
+    },
+   
     createdAt: {
         type: Date,
         default: Date.now
