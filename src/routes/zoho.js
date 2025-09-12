@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTickets, getMechanicTickets, createTicket, updateTicket } from '../controllers/zohoController.js';
+import { getTickets, getMechanicTickets, updateTicketinMongo, createTicket, updateTicket } from '../controllers/zohoController.js';
 // import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -15,6 +15,8 @@ router.post('/tickets', createTicket);
 
 // Route to update an existing ticket (protected by authentication)
 router.patch('/tickets/:ticketId', updateTicket);
+router.patch('/tickets/update/:ticketId', updateTicketinMongo);
+
 
 
 export default router;
