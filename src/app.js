@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import zohoRoutes from './routes/zoho.js';
 import userRoutes from './routes/users.js';
 import driverRoutes from './routes/driver.js';
+import rateCardRoutes from './routes/rateCard.js';
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/zoho', zohoRoutes);
 app.use('/api/driver', driverRoutes);
+app.use('/api/rate-card', rateCardRoutes);
 
 // Root route
 app.get('/', (req, res) => {
