@@ -75,8 +75,17 @@ const userSchema = new mongoose.Schema({
     state: { type: String, required: false },
     district: { type: String, required: false },
     googleMapsLocation: { type: String, required: false },
-    lat: { type: Number, required: false },
-    long: { type: Number, required: false },
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number],  // [longitude, latitude]
+            required: false
+        }
+    },
     recommendedBy: { type: String, required: false },
     lastVehicleAttendedOn: { type: Date, required: false },
     servicesFirstSep23Today: { type: Number, required: false },
@@ -147,6 +156,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePin = async function (candidatePin) {
     return await bcrypt.compare(candidatePin, this.pin);
 };
+
 
 const User = mongoose.model('User', userSchema);
 
