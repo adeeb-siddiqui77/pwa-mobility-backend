@@ -24,3 +24,24 @@ export const sendSms = async (phoneNumber,otpValue) => {
     throw error;
   }
 };
+
+
+export const sendWhatsAppMessage  =  async (to, text) => {
+  try {
+    to = to.replace("+91", "");
+    const response = await axios.post(
+      "https://wasenderapi.com/api/send-message",
+      { to, text },
+      {
+        headers: {
+          Authorization: "Bearer 6b937aeabafb56e6268c760ac9ecfea3990e9ebcc28946cfb6e9cead0924fcdd",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Message Sent:", response.data);
+  } catch (error) {
+    console.error("❌ Error Sending Message:", error.response?.data || error.message);
+  }
+}
