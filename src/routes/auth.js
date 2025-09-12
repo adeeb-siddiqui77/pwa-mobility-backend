@@ -167,7 +167,8 @@ router.post('/user/create',
         businessDays, 
         timeFrom, 
         timeTo, 
-        upi 
+        upi,
+        location
       } = req.body;
       
       // Check if user already exists
@@ -186,6 +187,30 @@ router.post('/user/create',
           message: 'All required files (adharCard, loiForm, kycImage, qrCode) must be uploaded'
         });
       }
+      // Parse and validate location if provided
+  let locationData;
+  if (location) {
+    try {
+      locationData = typeof location === 'string' ? JSON.parse(location) : location;
+
+      if (
+        locationData.type !== 'Point' ||
+        !Array.isArray(locationData.coordinates) ||
+        locationData.coordinates.length !== 2 ||
+        !locationData.coordinates.every(num => typeof num === 'number')
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid location format'
+        });
+      }
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid location JSON'
+      });
+    }
+  }
       
       // Create new user with file paths
       const newUser = new User({
@@ -202,6 +227,7 @@ router.post('/user/create',
         loiForm: req.files.loiForm[0].path,
         kycImage: req.files.kycImage[0].path,
         qrCode: req.files.qrCode[0].path,
+        location: locationData,
         isFirstLogin: true,
         createdBy: req.user._id
       });
