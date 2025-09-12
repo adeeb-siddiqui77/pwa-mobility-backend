@@ -32,9 +32,9 @@ const generateAccessToken = async (tokenDetails) => {
         });
         console.log("New access token response:", response.data);
 
-        tokenDetails.accessToken = response.data.access_token;
+        tokenDetails['accessToken'] = response.data.access_token;
         // Zoho tokens typically expire in 1 hour (3600 seconds)
-        tokenDetails.expiresAt = Date.now() + (response.data.expires_in * 1000);
+        tokenDetails['expiresAt'] = Date.now() + (response.data.expires_in * 1000);
         return tokenDetails;
     } catch (error) {
         console.error('Error generating access token:', error);
