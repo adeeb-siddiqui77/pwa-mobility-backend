@@ -8,7 +8,11 @@ export const checkDriver = async (req, res) => {
     const { phone } = req.params;
     console.log("phone", phone);
     const driver = await Driver.findOne({ driverPhone: phone });
-    return res.json({ exists: !!driver });
+    return res.json({ 
+      exists: !!driver,
+      vehicleNo : driver ? driver.vehicleNo : null,
+      name : driver ? driver.driverName : null,
+     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Server error" });
