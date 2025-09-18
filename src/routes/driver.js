@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Routes
 router.get("/check-driver/:phone", checkDriver);
-router.get("/check-driver/:vehicleNo", checkDriverByVehicle);
+router.get("/check-driver-by-vehicle", checkDriverByVehicle);
 router.get("/send-otp-vehicle", sendOtpByVehicleNo);
 router.post("/send-otp-phone", sendOtpByPhone);
 router.get("/verify-otp-driver", verifyOtpForDriver);
