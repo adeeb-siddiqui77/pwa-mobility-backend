@@ -19,6 +19,22 @@ export const checkDriver = async (req, res) => {
   }
 };
 
+
+export const checkDriverByVehicle = async (req, res) => {
+  try {
+    const { vehicleNo } = req.params;
+    const driver = await Driver.findOne({ vehicleNo });
+    return res.json({ 
+      exists: !!driver,
+      vehicleNo : driver ? driver.vehicleNo : null,
+      name : driver ? driver.driverName : null,
+     });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
 // 2️⃣ Send OTP using vehicle number
 export const sendOtpByVehicleNo = async (req, res) => {
   try {
