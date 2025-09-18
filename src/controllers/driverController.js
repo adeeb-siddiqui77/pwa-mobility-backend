@@ -22,7 +22,7 @@ export const checkDriver = async (req, res) => {
 
 export const checkDriverByVehicle = async (req, res) => {
   try {
-    const { vehicleNo } = req.params;
+    const { vehicleNo } = req.query;
     const driver = await Driver.findOne({ vehicleNo });
     return res.json({ 
       exists: !!driver,
