@@ -151,18 +151,20 @@ export const getTickets = async (req, res) => {
 export const createTicket = async (req, res) => {
     try {
         let { mechanicId, ticketData } = req.body;
+
+        console.log("Mechanic ID:", mechanicId);
         mechanicId = new mongoose.Types.ObjectId(mechanicId);
 
         console.log("Received ticket creation request:", { mechanicId, ticketData });
 
-        // Find mechanic by email
+        // Find mechanic by mechanicId
         const mechanic = await Users.findOne({ _id: mechanicId });
 
         console.log("Mechanic found:", mechanic);
         if (!mechanic) {
             return res.status(404).json({
                 error: 'Mechanic not found',
-                message: 'No mechanic found with the provided email'
+                message: 'No mechanic found with the provided mechanicId'
             });
         }
 
@@ -196,6 +198,9 @@ export const createTicket = async (req, res) => {
         const zohoResponse = await axios(config);
         const zohoTicket = zohoResponse.data;
 
+
+        console.log("Zoho ticket:", zohoTicket);
+
         
 
         // Create replica in MongoDB
@@ -209,7 +214,9 @@ export const createTicket = async (req, res) => {
 
         res.status(201).json({
             data: mongoTicket.toObject(),
-            message: "Ticket created successfully"
+            message: "Ticket created successfully",
+            zohoTicket: zohoTicket,
+            zohoTicketData : zohoTicketData,
         });
     } catch (error) {
         console.error('Error creating ticket:', error);
