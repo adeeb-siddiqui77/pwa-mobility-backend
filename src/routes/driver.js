@@ -1,5 +1,5 @@
 import express from "express";
-import { checkDriver, sendOtpByPhone, sendOtpByVehicleNo, verifyOtpForDriver, verifyOtpForMechanic, checkDriverByVehicle} from "../controllers/driverController.js";
+import { checkDriver, sendOtpByPhone, sendOtpByVehicleNo, verifyOtpForDriver, verifyOtpForMechanic, checkDriverByVehicle, updateDriverLanguage} from "../controllers/driverController.js";
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.get("/send-otp-vehicle", sendOtpByVehicleNo);
 router.post("/send-otp-phone", sendOtpByPhone);
 router.get("/verify-otp-driver", verifyOtpForDriver);
 router.get("/verify-otp-mechanic", verifyOtpForMechanic);
+router.post("/update-driver-language", updateDriverLanguage);
 
 export default router;

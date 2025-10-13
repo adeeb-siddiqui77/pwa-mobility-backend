@@ -16,6 +16,14 @@ const driverSchema = new mongoose.Schema(
       type: String, // storing as string to avoid issues with leading zeros
       required: true,
     },
+    fleetName : {
+      type : String,
+      required : true,
+    },
+    language : {
+      type : String,
+      default : "",
+    },
     otp: { type: String, default: null },
   },
   { timestamps: true }
