@@ -169,7 +169,10 @@ export async function startAttempt(jobId, attemptIndex) {
     eta: job.eta,
     slaSeconds: SLA_SECONDS,
     expiresAt: expiresAt.toISOString(),
-    ticketSummary: (job.ticketData && job.ticketData.subject) ? job.ticketData.subject : undefined
+    ticketSummary: (job.ticketData && job.ticketData.subject) ? job.ticketData.subject : undefined,
+    // customerName: job.ticketData?.contact?.name,
+  customerPhone: job.ticketData?.phone,
+  // vehicleType: job.ticketData?.vehicleType
   };
 
   ioInstance.to(`mechanic_${attempt.mechanicId.toString()}`).emit('job_alert', payload);
