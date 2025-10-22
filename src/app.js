@@ -12,6 +12,8 @@ import zohoRoutes from './routes/zoho.js';
 import userRoutes from './routes/users.js';
 import driverRoutes from './routes/driver.js';
 import rateCardRoutes from './routes/rateCard.js';
+import wasenderWebhook from './routes/wasenderWebhook.js';
+
 
 import jobsRoutes from './routes/jobs.js';
 import { initSocket, attachTestRoutes } from './services/socketService.js';
@@ -32,6 +34,9 @@ app.use('/api/rate-card', rateCardRoutes);
 
 // new jobs route
 app.use('/api/jobs', jobsRoutes);
+
+app.use('/webhooks/wasender', express.json({ type: '*/*' }), wasenderWebhook);
+
 
 // attach test routes (optional)
 attachTestRoutes(app);

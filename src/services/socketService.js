@@ -2,10 +2,16 @@
 import { Server } from 'socket.io';
 import JobAssignment from '../models/JobAssignment.js';
 import { createZohoTicketForMechanic } from './zohoService.js';
+// import { sendJobPollMessage } from './waSender.js';
+import User from '../models/User.js';
 
 let ioInstance = null;
 const timers = new Map();
 const SLA_SECONDS = parseInt(process.env.SLA_SECONDS || '120', 10);
+
+
+
+import { sendSimpleMessage, sendJobPollMessage } from './waSender.js';
 
 /**
  * initSocket(httpServer)
@@ -46,7 +52,7 @@ export function initSocket(httpServer) {
       try {
         // payload = { jobId, attemptIndex, response: 'accept'|'reject' }
         const { jobId, attemptIndex, response } = payload || {};
-        if (!jobId || typeof attemptIndex !== 'number' || !['accept','reject'].includes(response)) {
+        if (!jobId || typeof attemptIndex !== 'number' || !['accept', 'reject'].includes(response)) {
           if (cb) cb({ ok: false, message: 'invalid payload' });
           return;
         }
@@ -145,6 +151,8 @@ export function initSocket(httpServer) {
  * startAttempt(jobId, attemptIndex)
  * Emits job_alert and schedules SLA timeout.
  */
+// src/services/socketService.js (excerpt)
+
 export async function startAttempt(jobId, attemptIndex) {
   const job = await JobAssignment.findById(jobId);
   if (!job) throw new Error('Job not found');
@@ -169,16 +177,48 @@ export async function startAttempt(jobId, attemptIndex) {
     eta: job.eta,
     slaSeconds: SLA_SECONDS,
     expiresAt: expiresAt.toISOString(),
-    ticketSummary: (job.ticketData && job.ticketData.subject) ? job.ticketData.subject : undefined,
-    // customerName: job.ticketData?.contact?.name,
-  customerPhone: job.ticketData?.phone,
-  // vehicleType: job.ticketData?.vehicleType
+    ticketSummary: job.ticketData?.subject,
+    customerPhone: job.ticketData?.phone
   };
 
+  // 1) PWA popup
   ioInstance.to(`mechanic_${attempt.mechanicId.toString()}`).emit('job_alert', payload);
   console.log('Emitted job_alert to mechanic', attempt.mechanicId.toString(), payload);
 
-  // manage timer
+  // 2) WhatsApp text + poll (with 5s gap)
+  try {
+    const mechanic = await User.findById(attempt.mechanicId, 'mobile name');
+    if (mechanic?.mobile) {
+      const detailText =
+        `*New Job Request*\n` +
+        `Issue: ${job.issue || job.ticketData?.subject || 'Job'}\n` +
+        `ETA: ${job.eta || '—'}\n` +
+        `Respond by: ${expiresAt.toLocaleString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true })}\n\n` +
+        `This request will expire in *2 minutes*.`;
+
+      // (a) send text immediately
+      await sendSimpleMessage({ to: mechanic.mobile, text: detailText });
+      console.log("Sent WhatsApp text to mechanic");
+
+      // (b) wait 5 seconds (WaSender cooldown)
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // (c) send poll after cooldown
+      const wa = await sendJobPollMessage({ to: mechanic.mobile });
+      console.log("Sent WhatsApp poll to mechanic");
+
+      attempt.waMessageId = wa.messageId || null;
+      attempt.waStatus = wa.messageId ? 'sent' : 'unknown';
+      await job.save();
+    }
+  } catch (e) {
+    console.error('WhatsApp send failed:', e.response?.data || e.message);
+    attempt.waStatus = 'failed';
+    await job.save();
+  }
+
+
+  // 3) SLA timer unchanged
   const timerKey = `${jobId}:${attemptIndex}`;
   if (timers.has(timerKey)) {
     clearTimeout(timers.get(timerKey));
@@ -187,10 +227,8 @@ export async function startAttempt(jobId, attemptIndex) {
 
   const timeoutId = setTimeout(async () => {
     try {
-      console.log('Attempt timeout fired for', timerKey);
       timers.delete(timerKey);
 
-      // reload job
       const j = await JobAssignment.findById(jobId);
       if (!j) return;
       const a = j.attempts.find(x => x.index === attemptIndex);
@@ -213,8 +251,6 @@ export async function startAttempt(jobId, attemptIndex) {
           await j.save();
           console.log('All attempts exhausted for job', jobId, 'marked no_response');
         }
-      } else {
-        console.log('Attempt already handled or not expired on timeout check', jobId, attemptIndex);
       }
     } catch (err) {
       console.error('Error in attempt timeout handler', err);
@@ -223,6 +259,7 @@ export async function startAttempt(jobId, attemptIndex) {
 
   timers.set(timerKey, timeoutId);
 }
+
 
 /**
  * attachTestRoutes(app)
