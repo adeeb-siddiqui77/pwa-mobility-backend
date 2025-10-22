@@ -16,7 +16,7 @@ const client = axios.create({
 // Plain text message (always rendered)
 export async function sendSimpleMessage({ to, text }) {
   const { data } = await client.post("/api/send-message", { to, text });
-  const messageId = data?.messageId || data?.id || data?.messages?.[0]?.id || null;
+  const messageId = data?.msgId || data?.id || data?.messages?.[0]?.id || null;
   return { messageId, raw: data };
 }
 

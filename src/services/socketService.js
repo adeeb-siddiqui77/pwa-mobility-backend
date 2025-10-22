@@ -197,17 +197,21 @@ export async function startAttempt(jobId, attemptIndex) {
         `This request will expire in *2 minutes*.`;
 
       // (a) send text immediately
-      await sendSimpleMessage({ to: mechanic.mobile, text: detailText });
+      const textRes = await sendSimpleMessage({ to: mechanic.mobile, text: detailText });
       console.log("Sent WhatsApp text to mechanic");
+      console.log("[WA] text sent:", textRes)
 
       // (b) wait 5 seconds (WaSender cooldown)
       await new Promise(resolve => setTimeout(resolve, 5000));
 
       // (c) send poll after cooldown
       const wa = await sendJobPollMessage({ to: mechanic.mobile });
-      console.log("Sent WhatsApp poll to mechanic");
+      console.log("Sent WhatsApp poll to mechanic", wa);
 
-      attempt.waMessageId = wa.messageId || null;
+      // store ids (POLL id is the key we need)
+      attempt.waTextMessageId = textRes.msgId || null;
+      attempt.waPollMessageId = wa.messageId || null; // <— use this name
+      attempt.waMessageId = wa.messageId || null;     // backward-compat if you had waMessageId
       attempt.waStatus = wa.messageId ? 'sent' : 'unknown';
       await job.save();
     }
