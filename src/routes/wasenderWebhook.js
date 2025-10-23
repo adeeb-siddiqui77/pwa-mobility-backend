@@ -55,20 +55,26 @@ async function invokeCreateTicket(mechanicId, ticketData) {
 function extractSelectionAndOriginId(body) {
   const data = body?.data || body;
 
-  // Try to read “selected option”
+  // Try to read selected option text in multiple ways
   const selected =
+    // Poll votes
     data?.message?.pollUpdate?.selectedOptions?.[0]?.text ||
-    data?.message?.interactive?.button_reply?.title || // if rendered as interactive button
     data?.selectedOption ||
+    // Interactive button (some providers map polls as interactive replies)
+    data?.message?.interactive?.button_reply?.title ||
+    // Plain text fallback (“Accept”, “Reject”)
     data?.message?.conversation ||
     data?.message?.body ||
     '';
 
-  // Try to read “original poll message id”
+  // Try to read the original message id of the poll
   const originId =
+    // Poll creation key id
     data?.message?.pollUpdate?.pollCreationMessageKey?.id ||
     data?.pollCreationMessageId ||
+    // Context of replied message
     data?.message?.context?.id ||
+    // Sometimes in key
     data?.message?.key?.id ||
     null;
 
@@ -76,44 +82,99 @@ function extractSelectionAndOriginId(body) {
 }
 
 
+
 /**
  * MAIN WEBHOOK
  */
+
+
+
 router.post("/", async (req, res) => {
   try {
+    console.log("===== 📩 REAL WASENDER WEBHOOK HIT =====");
+    console.log(JSON.stringify(req.body, null, 2));
 
-    console.log('--- WaSender webhook hit ---');
-  console.log('headers:', JSON.stringify(req.headers, null, 2));
-  console.log('body:', JSON.stringify(req.body, null, 2));
+    // --- Step 1: Extract selection + original poll message ID ---
+    const data = req.body?.data || req.body;
 
+    const selected =
+      data?.message?.pollUpdate?.selectedOptions?.[0]?.text ||
+      data?.message?.interactive?.button_reply?.title ||
+      data?.selectedOption ||
+      data?.message?.conversation ||
+      data?.message?.body ||
+      "";
 
-    const { selected, originId } = extractSelectionAndOriginId(req.body);
-    if (!selected || !originId) return res.sendStatus(200);
+    const originId =
+      data?.message?.pollUpdate?.pollCreationMessageKey?.id ||
+      data?.pollCreationMessageId ||
+      data?.message?.context?.id ||
+      data?.message?.key?.id ||
+      null;
 
-    // 1) Find the job & attempt using the poll message id we stored when sending
-    const job = await JobAssignment.findOne({ "attempts.waMessageId": originId });
-    if (!job) return res.sendStatus(200);
+    if (!selected) return res.sendStatus(200);
 
-    const attempt = job.attempts.find((a) => a.waMessageId === originId);
-    if (!attempt) return res.sendStatus(200);
+    console.log("Selected:", selected);
+    console.log("Origin Poll ID:", originId);
 
-    const attemptIndex = attempt.index;
-    const now = new Date();
+    // --- Step 2: Try to map attempt by pollId first ---
+    let job = originId
+      ? await JobAssignment.findOne({
+          $or: [
+            { "attempts.waPollMessageId": originId },
+            { "attempts.waMessageId": originId }
+          ]
+        })
+      : null;
 
-    // 2) Enforce SLA + first-vote-wins (idempotent)
-    if (
-      attempt.status !== "pending" ||
-      (attempt.expiresAt && new Date(attempt.expiresAt) <= now)
-    ) {
-      // Too late or already handled → notify mechanic & exit
-      await safeReplyToMechanic(attempt);
+    let attempt = job?.attempts?.find(
+      (a) => a.waPollMessageId === originId || a.waMessageId === originId
+    );
+
+    // --- Step 3: Fallback by mechanic phone if pollId missing ---
+    if (!attempt) {
+      const from =
+        data?.key?.remoteJid ||
+        data?.key?.from ||
+        data?.message?.from ||
+        data?.from ||
+        "";
+      const digits = from.replace(/\D/g, "");
+
+      if (digits) {
+        const mech = await User.findOne({ phone: new RegExp(digits + "$") });
+        if (mech) {
+          job = await JobAssignment.findOne({
+            "attempts.mechanicId": mech._id,
+            "attempts.status": "pending"
+          }).sort({ createdAt: -1 });
+
+          attempt = job?.attempts?.find(
+            (a) =>
+              String(a.mechanicId) === String(mech._id) &&
+              a.status === "pending"
+          );
+        }
+      }
+    }
+
+    // If still not found, ignore
+    if (!job || !attempt) {
+      console.log("❌ No matching job/attempt found for webhook");
       return res.sendStatus(200);
     }
 
-    // 3) Atomically flip the state so only the first vote wins under race
+    const attemptIndex = attempt.index;
+    const now = new Date();
+    const io = getIo();
+
+    // --- Step 4: SLA + First-Vote-Wins (idempotent) ---
     const choice = selected.toLowerCase();
-    const desired = choice.includes("accept") ? "accepted" :
-                    choice.includes("reject") ? "rejected" : null;
+    const desired = choice.includes("accept")
+      ? "accepted"
+      : choice.includes("reject")
+      ? "rejected"
+      : null;
 
     if (!desired) return res.sendStatus(200);
 
@@ -121,7 +182,7 @@ router.post("/", async (req, res) => {
       _id: job._id,
       "attempts.index": attemptIndex,
       "attempts.status": "pending",
-      "attempts.expiresAt": { $gt: now }, // still within SLA
+      "attempts.expiresAt": { $gt: now } // must still be active
     };
 
     const update = {
@@ -129,50 +190,48 @@ router.post("/", async (req, res) => {
         "attempts.$.status": desired,
         "attempts.$.response": desired === "accepted" ? "accept" : "reject",
         "attempts.$.respondedAt": now,
-        ...(desired === "accepted" ? { status: "accepted" } : {}),
-      },
+        ...(desired === "accepted" ? { status: "accepted" } : {})
+      }
     };
 
     const updated = await JobAssignment.findOneAndUpdate(filter, update, {
-      new: true,
+      new: true
     });
 
+    // If update failed → expired or already handled → reply + exit
     if (!updated) {
-      // Lost the race or expired between reads
       await safeReplyToMechanic(attempt);
       return res.sendStatus(200);
     }
 
-    // Re-pull the attempt after update
-    const updatedAttempt = updated.attempts.find((a) => a.index === attemptIndex);
-    const io = getIo();
+    // Re-fetch updated attempt after DB update
+    const updatedAttempt = updated.attempts.find(
+      (a) => a.index === attemptIndex
+    );
 
-    // 4) Broadcast ack to the PWA room so UI syncs
+    // --- Step 5: Notify PWA via Socket ---
     io.to(`mechanic_${updatedAttempt.mechanicId.toString()}`).emit(
       "job_response_ack",
       {
         jobId: updated._id.toString(),
         attemptIndex,
-        action: desired === "accepted" ? "ACCEPT" : "REJECT",
+        action: desired === "accepted" ? "ACCEPT" : "REJECT"
       }
     );
 
-    // 5) Side-effects per choice
+    // --- Step 6: Accept -> createTicket | Reject -> next mechanic ---
     if (desired === "accepted") {
-      // Call your existing createTicket API with original ticketData + mechanicId
       try {
+        // Calls your existing createTicket (DO NOT DUPLICATE ZOHO LOGIC)
         await invokeCreateTicket(updatedAttempt.mechanicId, updated.ticketData);
-      } catch (e) {
-        // If Zoho fails here, the attempt is already accepted. You might want to:
-        // - mark a flag on the job (e.g., ticketCreationFailed: true)
-        // - and alert ops / retry queue. For now, we just log.
-        console.error("createTicket failed after accept:", e.message);
+      } catch (error) {
+        console.error("❌ createTicket failed:", error.message);
       }
     } else {
-      // Rejection → move to next attempt or close as no_response
-      const nextIdx = attemptIndex + 1;
-      if (nextIdx < updated.attempts.length) {
-        await startAttempt(updated._id, nextIdx);
+      // If rejected → try next mechanic
+      const next = attemptIndex + 1;
+      if (next < updated.attempts.length) {
+        await startAttempt(updated._id, next);
       } else {
         updated.status = "no_response";
         await updated.save();
@@ -181,10 +240,10 @@ router.post("/", async (req, res) => {
 
     return res.sendStatus(200);
   } catch (err) {
-    console.error("WaSender webhook error", err);
-    // Always 200 to prevent webhook retry storms; you can tighten this later if needed.
+    console.error("❌ WaSender webhook error", err);
     return res.sendStatus(200);
   }
 });
+
 
 export default router;
