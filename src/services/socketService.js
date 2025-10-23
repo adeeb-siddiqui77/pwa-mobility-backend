@@ -209,7 +209,7 @@ export async function startAttempt(jobId, attemptIndex) {
       console.log("Sent WhatsApp poll to mechanic", wa);
 
       // store ids (POLL id is the key we need)
-      attempt.waTextMessageId = textRes.msgId || null;
+      attempt.waTextMessageId = textRes.messageId || null;
       attempt.waPollMessageId = wa.messageId || null; // <— use this name
       attempt.waMessageId = wa.messageId || null;     // backward-compat if you had waMessageId
       attempt.waStatus = wa.messageId ? 'sent' : 'unknown';
