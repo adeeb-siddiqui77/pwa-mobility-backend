@@ -24,18 +24,37 @@ export const checkDriver = async (req, res) => {
 // Update driver language
 export const updateDriverLanguage = async (req, res) => {
   try {
-    const { phone, language } = req.body;
-    const driver = await Driver.findOne({ driverPhone: phone });
+    const { phone, language, vehicleNo } = req.body;
+
+    if (!language) {
+      return res.status(400).json({ error: "Language is required" });
+    }
+
+    if (!phone && !vehicleNo) {
+      return res.status(400).json({ error: "Either phone or vehicleNo is required" });
+    }
+
+    const filter = phone
+      ? { driverPhone: phone }
+      : { vehicleNo: vehicleNo };
+
+    const driver = await Driver.findOne(filter);
     if (!driver) {
       return res.status(404).json({ error: "Driver not found" });
     }
-    await Driver.updateOne({ _id: driver._id }, { $set: { language: language } });
-    return res.json({ success: true, message: "Driver language updated successfully" });
+
+    await Driver.updateOne({ _id: driver._id }, { $set: { language } });
+
+    return res.json({
+      success: true,
+      message: "Driver language updated successfully",
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Server error" });
   }
-}
+};
+
 
 export const checkDriverByVehicle = async (req, res) => {
   try {
