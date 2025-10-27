@@ -6,12 +6,15 @@ const TOKEN = process.env.WASENDER_API_TOKEN;
 
 const client = axios.create({
   baseURL: BASE,
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     Authorization: `Bearer ${TOKEN}`,
     "Content-Type": "application/json",
   },
 });
+
+
+
 
 // Plain text message (always rendered)
 export async function sendSimpleMessage({ to, text }) {
@@ -20,17 +23,16 @@ export async function sendSimpleMessage({ to, text }) {
   return { messageId, raw: data };
 }
 
-// Poll message (single-choice buttons)
-export async function sendJobPollMessage({ to }) {
+export async function sendJobPollMessage({ to, question = "Do you accept this job?" }) {
   const payload = {
     to,
     poll: {
-      question: "Do you accept this job?",
+      question,
       options: ["Accept", "Reject"],
       multiSelect: false
     }
   };
   const { data } = await client.post("/api/send-message", payload);
-  const messageId = data?.data?.msgId || null;
+  const messageId = data?.data?.msgId || data?.id || data?.messages?.[0]?.id || null;
   return { messageId, raw: data };
 }
