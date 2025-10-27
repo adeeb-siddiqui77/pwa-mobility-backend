@@ -47,7 +47,7 @@ initSocket(server);
 
 // connect DB and listen (your existing start logic)
 connectDB().then(() => {
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 9897;
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }).catch(err => {
   console.error('DB connect error', err);
