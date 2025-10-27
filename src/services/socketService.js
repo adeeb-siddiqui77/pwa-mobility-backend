@@ -201,18 +201,19 @@ export async function startAttempt(jobId, attemptIndex) {
       console.log("Sent WhatsApp text to mechanic");
       console.log("[WA] text sent:", textRes)
 
-      // (b) wait 5 seconds (WaSender cooldown)
-      await new Promise(resolve => setTimeout(resolve, 5000));
 
-      // (c) send poll after cooldown
-      const wa = await sendJobPollMessage({ to: mechanic.mobile });
-      console.log("Sent WhatsApp poll to mechanic", wa);
+      await new Promise(r => setTimeout(r, 5000));
+
+
+      // (b) send interactive buttons (no 5s delay required now)
+    const btnRes = await sendJobPollMessage({ to: mechanic.mobile , question : "Do you accept this job?" });
+    console.log("[WA] buttons sent:", btnRes);
 
       // store ids (POLL id is the key we need)
       attempt.waTextMessageId = textRes.messageId || null;
-      attempt.waPollMessageId = wa.messageId || null; // <— use this name
-      attempt.waMessageId = wa.messageId || null;     // backward-compat if you had waMessageId
-      attempt.waStatus = wa.messageId ? 'sent' : 'unknown';
+      attempt.waPollMessageId  = btnRes.messageId || null; // <— use this name
+      attempt.waMessageId = btnRes.messageId || null;     // backward-compat if you had waMessageId
+      attempt.waStatus = btnRes.messageId ? 'sent' : 'unknown';
       await job.save();
     }
   } catch (e) {
