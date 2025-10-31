@@ -16,136 +16,136 @@ import { sendSimpleMessage, sendJobPollMessage } from './waSender.js';
 /**
  * initSocket(httpServer)
  */
-export function initSocket(httpServer) {
-  if (ioInstance) return ioInstance;
+// export function initSocket(httpServer) {
+//   if (ioInstance) return ioInstance;
 
-  ioInstance = new Server(httpServer, {
-    cors: { origin: '*', methods: ['GET', 'POST'] },
-    path: '/socket.io'
-  });
+//   ioInstance = new Server(httpServer, {
+//     cors: { origin: '*', methods: ['GET', 'POST'] },
+//     path: '/socket.io'
+//   });
 
-  console.log('Socket.IO initializing...');
+//   console.log('Socket.IO initializing...');
 
-  ioInstance.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id, 'handshake:', socket.handshake && (socket.handshake.auth || socket.handshake.query));
+//   ioInstance.on('connection', (socket) => {
+//     console.log('Socket connected:', socket.id, 'handshake:', socket.handshake && (socket.handshake.auth || socket.handshake.query));
 
-    // mechanic registers to a room: { mechanicId }
-    socket.on('mechanic_register', (data, cb) => {
-      try {
-        if (!data || !data.mechanicId) {
-          if (cb) cb({ ok: false, message: 'mechanicId required' });
-          return;
-        }
-        const room = `mechanic_${data.mechanicId.toString()}`;
-        socket.join(room);
-        console.log(`Socket ${socket.id} joined room ${room}`);
-        if (cb) cb({ ok: true, message: `joined ${room}` });
-        socket.emit('registered', { mechanicId: data.mechanicId, socketId: socket.id });
-      } catch (err) {
-        console.error('mechanic_register error', err);
-        if (cb) cb({ ok: false, message: 'internal error' });
-      }
-    });
+//     // mechanic registers to a room: { mechanicId }
+//     socket.on('mechanic_register', (data, cb) => {
+//       try {
+//         if (!data || !data.mechanicId) {
+//           if (cb) cb({ ok: false, message: 'mechanicId required' });
+//           return;
+//         }
+//         const room = `mechanic_${data.mechanicId.toString()}`;
+//         socket.join(room);
+//         console.log(`Socket ${socket.id} joined room ${room}`);
+//         if (cb) cb({ ok: true, message: `joined ${room}` });
+//         socket.emit('registered', { mechanicId: data.mechanicId, socketId: socket.id });
+//       } catch (err) {
+//         console.error('mechanic_register error', err);
+//         if (cb) cb({ ok: false, message: 'internal error' });
+//       }
+//     });
 
-    // Mechanic response handler
-    socket.on('job_response', async (payload, cb) => {
-      try {
-        // payload = { jobId, attemptIndex, response: 'accept'|'reject' }
-        const { jobId, attemptIndex, response } = payload || {};
-        if (!jobId || typeof attemptIndex !== 'number' || !['accept', 'reject'].includes(response)) {
-          if (cb) cb({ ok: false, message: 'invalid payload' });
-          return;
-        }
+//     // Mechanic response handler
+//     socket.on('job_response', async (payload, cb) => {
+//       try {
+//         // payload = { jobId, attemptIndex, response: 'accept'|'reject' }
+//         const { jobId, attemptIndex, response } = payload || {};
+//         if (!jobId || typeof attemptIndex !== 'number' || !['accept', 'reject'].includes(response)) {
+//           if (cb) cb({ ok: false, message: 'invalid payload' });
+//           return;
+//         }
 
-        const job = await JobAssignment.findById(jobId);
-        if (!job) {
-          if (cb) cb({ ok: false, message: 'job not found' });
-          return;
-        }
+//         const job = await JobAssignment.findById(jobId);
+//         if (!job) {
+//           if (cb) cb({ ok: false, message: 'job not found' });
+//           return;
+//         }
 
-        const attempt = job.attempts.find(a => a.index === attemptIndex);
-        if (!attempt) {
-          if (cb) cb({ ok: false, message: 'attempt not found' });
-          return;
-        }
+//         const attempt = job.attempts.find(a => a.index === attemptIndex);
+//         if (!attempt) {
+//           if (cb) cb({ ok: false, message: 'attempt not found' });
+//           return;
+//         }
 
-        const now = new Date();
-        if (attempt.status !== 'pending') {
-          if (cb) cb({ ok: false, message: 'attempt not pending' });
-          return;
-        }
-        if (attempt.expiresAt && new Date(attempt.expiresAt) <= now) {
-          if (cb) cb({ ok: false, message: 'SLA expired' });
-          return;
-        }
+//         const now = new Date();
+//         if (attempt.status !== 'pending') {
+//           if (cb) cb({ ok: false, message: 'attempt not pending' });
+//           return;
+//         }
+//         if (attempt.expiresAt && new Date(attempt.expiresAt) <= now) {
+//           if (cb) cb({ ok: false, message: 'SLA expired' });
+//           return;
+//         }
 
-        // Clear timer
-        const timerKey = `${jobId}:${attemptIndex}`;
-        const timeoutId = timers.get(timerKey);
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timers.delete(timerKey);
-        }
+//         // Clear timer
+//         const timerKey = `${jobId}:${attemptIndex}`;
+//         const timeoutId = timers.get(timerKey);
+//         if (timeoutId) {
+//           clearTimeout(timeoutId);
+//           timers.delete(timerKey);
+//         }
 
-        if (response === 'accept') {
-          // mark accepted
-          attempt.status = 'accepted';
-          attempt.response = 'accept';
-          attempt.respondedAt = now;
-          job.status = 'accepted';
-          await job.save();
+//         if (response === 'accept') {
+//           // mark accepted
+//           attempt.status = 'accepted';
+//           attempt.response = 'accept';
+//           attempt.respondedAt = now;
+//           job.status = 'accepted';
+//           await job.save();
 
-          // call Zoho helper (reuses your logic)
-          try {
-            const { zohoTicket, mongoTicket } = await createZohoTicketForMechanic(job.ticketData, attempt.mechanicId);
-            job.acceptedTicketId = zohoTicket.id;
-            await job.save();
+//           // call Zoho helper (reuses your logic)
+//           try {
+//             const { zohoTicket, mongoTicket } = await createZohoTicketForMechanic(job.ticketData, attempt.mechanicId);
+//             job.acceptedTicketId = zohoTicket.id;
+//             await job.save();
 
-            // ack mechanic
-            if (cb) cb({ ok: true, message: 'Accepted and ticket created', ticket: mongoTicket });
-            // optionally notify agent / admins here
-            ioInstance.to(`mechanic_${attempt.mechanicId.toString()}`).emit('job_response_ack', { ok: true, message: 'Ticket created', ticket: mongoTicket });
-            return;
-          } catch (err) {
-            console.error('Zoho create error', err);
-            job.status = 'failed';
-            await job.save();
-            if (cb) cb({ ok: false, message: 'Accepted but Zoho creation failed', error: err.message });
-            return;
-          }
-        } else {
-          // reject -> mark and move to next
-          attempt.status = 'rejected';
-          attempt.response = 'reject';
-          attempt.respondedAt = now;
-          await job.save();
+//             // ack mechanic
+//             if (cb) cb({ ok: true, message: 'Accepted and ticket created', ticket: mongoTicket });
+//             // optionally notify agent / admins here
+//             ioInstance.to(`mechanic_${attempt.mechanicId.toString()}`).emit('job_response_ack', { ok: true, message: 'Ticket created', ticket: mongoTicket });
+//             return;
+//           } catch (err) {
+//             console.error('Zoho create error', err);
+//             job.status = 'failed';
+//             await job.save();
+//             if (cb) cb({ ok: false, message: 'Accepted but Zoho creation failed', error: err.message });
+//             return;
+//           }
+//         } else {
+//           // reject -> mark and move to next
+//           attempt.status = 'rejected';
+//           attempt.response = 'reject';
+//           attempt.respondedAt = now;
+//           await job.save();
 
-          const nextIndex = attemptIndex + 1;
-          if (nextIndex < job.attempts.length) {
-            await startAttempt(job._id, nextIndex);
-            if (cb) cb({ ok: true, message: 'Rejection recorded, moved to next' });
-            return;
-          } else {
-            job.status = 'no_response';
-            await job.save();
-            if (cb) cb({ ok: true, message: 'Rejection recorded; no mechanics left' });
-            return;
-          }
-        }
-      } catch (err) {
-        console.error('job_response handler error', err);
-        if (cb) cb({ ok: false, message: err.message });
-      }
-    });
+//           const nextIndex = attemptIndex + 1;
+//           if (nextIndex < job.attempts.length) {
+//             await startAttempt(job._id, nextIndex);
+//             if (cb) cb({ ok: true, message: 'Rejection recorded, moved to next' });
+//             return;
+//           } else {
+//             job.status = 'no_response';
+//             await job.save();
+//             if (cb) cb({ ok: true, message: 'Rejection recorded; no mechanics left' });
+//             return;
+//           }
+//         }
+//       } catch (err) {
+//         console.error('job_response handler error', err);
+//         if (cb) cb({ ok: false, message: err.message });
+//       }
+//     });
 
-    socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', socket.id, reason);
-    });
-  });
+//     socket.on('disconnect', (reason) => {
+//       console.log('Socket disconnected:', socket.id, reason);
+//     });
+//   });
 
-  console.log('Socket.IO initialized');
-  return ioInstance;
-}
+//   console.log('Socket.IO initialized');
+//   return ioInstance;
+// }
 
 /**
  * startAttempt(jobId, attemptIndex)
@@ -287,5 +287,140 @@ export function attachTestRoutes(app) {
  * getIo()
  */
 export function getIo() {
+  return ioInstance;
+}
+
+
+export function startSocketServer() {
+  if (ioInstance) return ioInstance;
+
+  const PORT = process.env.SOCKET_PORT || 7989;
+
+  ioInstance = new Server(PORT, {
+    cors: { origin: "*", methods: ["GET", "POST"] },
+    path: "/socket.io"
+  });
+
+  console.log(`✅ Socket server running on ${PORT}`);
+
+  // Copy your full connection logic from old initSocket
+  ioInstance.on('connection', (socket) => {
+    console.log('Socket connected:', socket.id, 'handshake:', socket.handshake && (socket.handshake.auth || socket.handshake.query));
+
+    // Mechanic register
+    socket.on('mechanic_register', async (data, cb) => {
+      try {
+        if (!data || !data.mechanicId) {
+          if (cb) cb({ ok: false, message: 'mechanicId required' });
+          return;
+        }
+        const room = `mechanic_${data.mechanicId.toString()}`;
+        socket.join(room);
+        console.log(`Socket ${socket.id} joined room ${room}`);
+        if (cb) cb({ ok: true, message: `joined ${room}` });
+        socket.emit('registered', { mechanicId: data.mechanicId, socketId: socket.id });
+      } catch (err) {
+        console.error('mechanic_register error', err);
+        if (cb) cb({ ok: false, message: 'internal error' });
+      }
+    });
+
+    // job_response handler
+    socket.on('job_response', async (payload, cb) => {
+      try {
+        // payload = { jobId, attemptIndex, response: 'accept'|'reject' }
+        const { jobId, attemptIndex, response } = payload || {};
+        if (!jobId || typeof attemptIndex !== 'number' || !['accept', 'reject'].includes(response)) {
+          if (cb) cb({ ok: false, message: 'invalid payload' });
+          return;
+        }
+
+        const job = await JobAssignment.findById(jobId);
+        if (!job) {
+          if (cb) cb({ ok: false, message: 'job not found' });
+          return;
+        }
+
+        const attempt = job.attempts.find(a => a.index === attemptIndex);
+        if (!attempt) {
+          if (cb) cb({ ok: false, message: 'attempt not found' });
+          return;
+        }
+
+        const now = new Date();
+        if (attempt.status !== 'pending') {
+          if (cb) cb({ ok: false, message: 'attempt not pending' });
+          return;
+        }
+        if (attempt.expiresAt && new Date(attempt.expiresAt) <= now) {
+          if (cb) cb({ ok: false, message: 'SLA expired' });
+          return;
+        }
+
+        // Clear timer
+        const timerKey = `${jobId}:${attemptIndex}`;
+        const timeoutId = timers.get(timerKey);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timers.delete(timerKey);
+        }
+
+        if (response === 'accept') {
+          // mark accepted
+          attempt.status = 'accepted';
+          attempt.response = 'accept';
+          attempt.respondedAt = now;
+          job.status = 'accepted';
+          await job.save();
+
+          // call Zoho helper (reuses your logic)
+          try {
+            const { zohoTicket, mongoTicket } = await createZohoTicketForMechanic(job.ticketData, attempt.mechanicId);
+            job.acceptedTicketId = zohoTicket.id;
+            await job.save();
+
+            // ack mechanic
+            if (cb) cb({ ok: true, message: 'Accepted and ticket created', ticket: mongoTicket });
+            // optionally notify agent / admins here
+            ioInstance.to(`mechanic_${attempt.mechanicId.toString()}`).emit('job_response_ack', { ok: true, message: 'Ticket created', ticket: mongoTicket });
+            return;
+          } catch (err) {
+            console.error('Zoho create error', err);
+            job.status = 'failed';
+            await job.save();
+            if (cb) cb({ ok: false, message: 'Accepted but Zoho creation failed', error: err.message });
+            return;
+          }
+        } else {
+          // reject -> mark and move to next
+          attempt.status = 'rejected';
+          attempt.response = 'reject';
+          attempt.respondedAt = now;
+          await job.save();
+
+          const nextIndex = attemptIndex + 1;
+          if (nextIndex < job.attempts.length) {
+            await startAttempt(job._id, nextIndex);
+            if (cb) cb({ ok: true, message: 'Rejection recorded, moved to next' });
+            return;
+          } else {
+            job.status = 'no_response';
+            await job.save();
+            if (cb) cb({ ok: true, message: 'Rejection recorded; no mechanics left' });
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('job_response handler error', err);
+        if (cb) cb({ ok: false, message: err.message });
+      }
+    });
+
+    // Disconnect
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', socket.id, reason);
+    });
+  });
+
   return ioInstance;
 }
