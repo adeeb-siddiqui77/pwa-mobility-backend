@@ -7,7 +7,7 @@ import { sendSimpleMessage } from "../services/waSender.js";
 
 // --- CONFIG ----------------------------------------------------
 const CREATE_TICKET_URL =
-  process.env.CREATE_TICKET_URL || "http://localhost:5000/api/zoho/create-ticket";
+  process.env.CREATE_TICKET_URL || "http://localhost:9897/api/zoho/create-ticket";
 // ^^^ Adjust to the route that hits your existing createTicket controller
 
 const router = express.Router();
