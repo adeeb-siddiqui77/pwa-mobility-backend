@@ -297,8 +297,8 @@ export function startSocketServer() {
   const PORT = process.env.SOCKET_PORT || 7989;
 
   ioInstance = new Server(PORT, {
-    cors: { origin: "*", methods: ["GET", "POST"] },
-    path: "/socket.io"
+    cors: { origin: "*", methods: ["GET", "POST"] , credentials : true },
+    // path: "/socket.io"
   });
 
   console.log(`✅ Socket server running on ${PORT}`);
