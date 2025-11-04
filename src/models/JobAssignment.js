@@ -13,7 +13,7 @@ const AttemptSchema = new Schema({
   waMessageId: { type: String, default: null },
   waStatus: { type: String, enum: ['sent', 'failed', 'unknown', null], default: null },
   waTextMessageId: { type: String, default: null },
-  waButtonMessageId : { type: String, default: null },
+  waPollMessageId : { type: String, default: null },
   waMessageId: { type: String, default: null }, // keep for backward compat
   waStatus: { type: String, default: null }
 
