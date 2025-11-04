@@ -36,3 +36,33 @@ export async function sendJobPollMessage({ to, question = "Do you accept this jo
   const messageId = data?.data?.msgId || data?.id || data?.messages?.[0]?.id || null;
   return { messageId, raw: data };
 }
+
+
+// Send WhatsApp Location
+export async function sendLocationMessage({ to, latitude, longitude, name }) {
+  const payload = {
+    to,
+    location: {
+      latitude: Number(latitude),
+      longitude: Number(longitude),
+      name
+    }
+  };
+
+  console.log("📍 Sending location message to:", to);
+  console.log("📍 Location:", { latitude, longitude, name });
+  console.log("📍 Payload:", payload);
+
+  try {
+    const { data } = await client.post("/api/send-message", payload);
+
+    console.log("✅ Location message sent:", data);
+
+    const messageId = data?.data?.msgId || null;
+    return { messageId, raw: data };
+  } catch (err) {
+    console.error("❌ Error sending location message:");
+    console.error(err.response?.data || err.message);
+  }
+}
+
