@@ -23,7 +23,9 @@ export async function notifyDriverOnAccept(ticketData, mechanicId) {
 
     const message =
       `✅ *Job Accepted*\n\n` +
-      `Mechanic: ${ticketData?.cf?.cf_pitstop_name}\n` +
+      `Name: ${mechanic?.shopName}\n` +
+      `Address: ${mechanic?.address}\n` +
+      `Contact: ${mechanic?.mobile}\n` +
       `The Pitshop location is attached below`;
 
     console.log(`[WA] Sending driver confirmation: ${driverPhone}`);
