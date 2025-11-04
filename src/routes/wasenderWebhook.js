@@ -7,7 +7,7 @@ import { sendSimpleMessage } from "../services/waSender.js";
 
 // --- CONFIG ----------------------------------------------------
 const CREATE_TICKET_URL =
-  process.env.CREATE_TICKET_URL || "http://localhost:9897/api/zoho/create-ticket";
+  process.env.CREATE_TICKET_URL || "http://localhost:9897/api/zoho/tickets";
 // ^^^ Adjust to the route that hits your existing createTicket controller
 
 const router = express.Router();
@@ -30,6 +30,11 @@ async function safeReplyToMechanic(attempt) {
  * NOTE: Ensure your API accepts { mechanicId, ticketData } as JSON body.
  */
 async function invokeCreateTicket(mechanicId, ticketData) {
+
+
+  console.log("mechanicId" , mechanicId)
+  console.log("ticketData" , ticketData)
+
   try {
     const { data } = await axios.post(
       CREATE_TICKET_URL,
@@ -82,6 +87,16 @@ function extractSelectionAndOriginId(body) {
 router.post("/", async (req, res) => {
   try {
     console.log("===== 📩 REAL WASENDER WEBHOOK =====");
+
+    console.log('--- WEBHOOK HEADERS ---');
+console.log(JSON.stringify(req.headers, null, 2));
+console.log('--- WEBHOOK BODY (top-level keys) ---');
+console.log(Object.keys(req.body || {}).join(', '));
+console.log('--- RAW BODY ---');
+console.log(JSON.stringify(req.body, null, 2));
+
+
+
     console.log(JSON.stringify(req.body, null, 2));
 
     const event = req.body?.event || req.body?.type || "messages.upsert";

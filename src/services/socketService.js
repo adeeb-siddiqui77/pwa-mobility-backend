@@ -12,6 +12,7 @@ const SLA_SECONDS = parseInt(process.env.SLA_SECONDS || '120', 10);
 
 
 import { sendSimpleMessage, sendJobPollMessage } from './waSender.js';
+import { notifyDriverOnAccept } from './waNotifyDriver.js';
 
 /**
  * initSocket(httpServer)
@@ -378,6 +379,8 @@ export function startSocketServer() {
             const { zohoTicket, mongoTicket } = await createZohoTicketForMechanic(job.ticketData, attempt.mechanicId);
             job.acceptedTicketId = zohoTicket.id;
             await job.save();
+
+            await notifyDriverOnAccept(job?.ticketData , attempt.mechanicId)
 
             // ack mechanic
             if (cb) cb({ ok: true, message: 'Accepted and ticket created', ticket: mongoTicket });
