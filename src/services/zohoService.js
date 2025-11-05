@@ -8,6 +8,7 @@ import { getValidAccessToken } from './tokenService.js';
 
 
 export async function createZohoTicketForMechanic(ticketData, mechanicId) {
+
   if (!mechanicId) throw new Error('mechanicId required');
 
   // ensure ObjectId
@@ -25,6 +26,11 @@ export async function createZohoTicketForMechanic(ticketData, mechanicId) {
     e.status = 404;
     throw e;
   }
+
+  ticketData.cf.cf_pitstop_name = mechanic?.shopName;
+  ticketData.cf.cf_pitstop_contact = mechanic?.mobile;
+  ticketData.cf.cf_pitstop_location = mechanic?.address;
+
 
   const tokenDetails = await getValidAccessToken({ accessToken: null, expiresAt: null });
   if (!tokenDetails || !tokenDetails.accessToken) {
