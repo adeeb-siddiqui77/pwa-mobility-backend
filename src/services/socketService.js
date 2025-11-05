@@ -207,12 +207,12 @@ export async function startAttempt(jobId, attemptIndex) {
 
 
       // (b) send interactive buttons (no 5s delay required now)
-    const btnRes = await sendJobPollMessage({ to: mechanic.mobile , question : "Do you accept this job?" });
-    console.log("[WA] buttons sent:", btnRes);
+      const btnRes = await sendJobPollMessage({ to: mechanic.mobile, question: "Do you accept this job?" });
+      console.log("[WA] buttons sent:", btnRes);
 
       // store ids (POLL id is the key we need)
       attempt.waTextMessageId = textRes.messageId || null;
-      attempt.waPollMessageId  = btnRes.messageId || null; // <— use this name
+      attempt.waPollMessageId = btnRes.messageId || null; // <— use this name
       attempt.waMessageId = btnRes.messageId || null;     // backward-compat if you had waMessageId
       attempt.waStatus = btnRes.messageId ? 'sent' : 'unknown';
       await job.save();
@@ -298,7 +298,7 @@ export function startSocketServer() {
   const PORT = process.env.SOCKET_PORT || 7989;
 
   ioInstance = new Server(PORT, {
-    cors: { origin: "*", methods: ["GET", "POST"] , credentials : true },
+    cors: { origin: "*", methods: ["GET", "POST"], credentials: true },
     // path: "/socket.io"
   });
 
@@ -380,7 +380,20 @@ export function startSocketServer() {
             job.acceptedTicketId = zohoTicket.id;
             await job.save();
 
-            await notifyDriverOnAccept(job?.ticketData , attempt.mechanicId)
+            await notifyDriverOnAccept(job?.ticketData, attempt.mechanicId)
+
+            // Now call webhook after WhatsApp notify
+            try {
+              await axios.post("https://jfq3fvl7-8080.inc1.devtunnels.ms/webhook/pitstop-acceptance", {
+                accepted: true,
+                phoneNumber: job?.ticketData?.cf?.cf_driver_phone_number
+              }, {
+                headers: { "Content-Type": "application/json" }
+              });
+            } catch (webhookErr) {
+              console.error("Error calling pitstop-acceptance webhook:", webhookErr);
+              // decide if you want to fail job or ignore
+            }
 
             // ack mechanic
             if (cb) cb({ ok: true, message: 'Accepted and ticket created', ticket: mongoTicket });
