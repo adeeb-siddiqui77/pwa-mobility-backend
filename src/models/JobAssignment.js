@@ -26,6 +26,7 @@ const JobAssignmentSchema = new Schema({
   issue: String,
   eta: String,
   attempts: [AttemptSchema],
+  roomName : String,
   currentAttemptIndex: { type: Number, default: 0 },
   status: { type: String, enum: ['open', 'accepted', 'no_response', 'failed'], default: 'open' },
   acceptedTicketId: String,
