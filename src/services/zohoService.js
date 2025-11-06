@@ -27,6 +27,16 @@ export async function createZohoTicketForMechanic(ticketData, mechanicId) {
     throw e;
   }
 
+  const multipleIssue = ticketData.cf.cf_issue
+    .split(";")
+    .map(issue => issue.trim())
+    .filter(Boolean); // remove any empty strings
+
+
+  multipleIssue.forEach((issue, index) => {
+    ticketData.cf[`cf_issue${index + 1}`] = issue;
+  });
+
   ticketData.cf.cf_pitstop_name = mechanic?.shopName;
   ticketData.cf.cf_pitstop_contact = mechanic?.mobile;
   ticketData.cf.cf_pitstop_location = mechanic?.address;
@@ -37,13 +47,13 @@ export async function createZohoTicketForMechanic(ticketData, mechanicId) {
     throw new Error('Zoho access token not available');
   }
 
-  console.log("Access Token:", tokenDetails);
+  // console.log("Access Token:", tokenDetails);
 
 
   const zohoTicketData = { ...ticketData };
 
 
-  console.log("Creating Zoho ticket with data:", zohoTicketData);
+  // console.log("Creating Zoho ticket with data:", zohoTicketData);
 
   // Call Zoho
   const config = {
@@ -62,7 +72,7 @@ export async function createZohoTicketForMechanic(ticketData, mechanicId) {
   const zohoTicket = zohoResponse.data;
 
 
-  console.log("Zoho ticket:", zohoTicket);
+  // console.log("Zoho ticket:", zohoTicket);
 
   // Create replica in MongoDB
   const mongoTicket = await Ticket.create({

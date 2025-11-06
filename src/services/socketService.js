@@ -13,6 +13,7 @@ const SLA_SECONDS = parseInt(process.env.SLA_SECONDS || '120', 10);
 
 import { sendSimpleMessage, sendJobPollMessage } from './waSender.js';
 import { notifyDriverOnAccept } from './waNotifyDriver.js';
+import axios from 'axios';
 
 /**
  * initSocket(httpServer)
@@ -376,24 +377,16 @@ export function startSocketServer() {
 
           // call Zoho helper (reuses your logic)
           try {
-            const { zohoTicket, mongoTicket } = await createZohoTicketForMechanic(job.ticketData, attempt.mechanicId);
+
+            console.log("JOB WHEN ACCEPTED ------------------------" , job)
+            const { zohoTicket, mongoTicket } = await createZohoTicketForMechanic(job?.ticketData, attempt?.mechanicId);
             job.acceptedTicketId = zohoTicket.id;
             await job.save();
 
-            await notifyDriverOnAccept(job?.ticketData, attempt.mechanicId)
 
-            // Now call webhook after WhatsApp notify
-            try {
-              await axios.post("https://jfq3fvl7-8080.inc1.devtunnels.ms/webhook/pitstop-acceptance", {
-                accepted: true,
-                phoneNumber: job?.ticketData?.cf?.cf_driver_phone_number
-              }, {
-                headers: { "Content-Type": "application/json" }
-              });
-            } catch (webhookErr) {
-              console.error("Error calling pitstop-acceptance webhook:", webhookErr);
-              // decide if you want to fail job or ignore
-            }
+            console.log("Job before sending message -------", job)
+
+            await notifyDriverOnAccept(job?.ticketData, attempt.mechanicId)
 
             // ack mechanic
             if (cb) cb({ ok: true, message: 'Accepted and ticket created', ticket: mongoTicket });

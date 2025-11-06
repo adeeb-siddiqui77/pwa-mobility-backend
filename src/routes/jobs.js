@@ -11,7 +11,7 @@ const router = express.Router();
  */
 router.post('/', async (req, res) => {
   try {
-    const { ticketData, issue, eta, sortedMechanicIds } = req.body;
+    const { ticketData, issue, eta, sortedMechanicIds , roomName } = req.body;
     if (!sortedMechanicIds || !Array.isArray(sortedMechanicIds) || sortedMechanicIds.length === 0) {
       return res.status(400).json({ ok: false, message: 'sortedMechanicIds required' });
     }
@@ -26,6 +26,7 @@ router.post('/', async (req, res) => {
       ticketData,
       issue,
       eta,
+      roomName,
       attempts
     });
 
@@ -47,7 +48,7 @@ router.get('/:id', async (req, res) => {
   try {
     const job = await JobAssignment.findById(req.params.id);
     if (!job) return res.status(404).json({ ok: false, message: 'not found' });
-    return res.json({ ok: true, job });
+    return res.json({ ok: true, job : job?.status , acceptedTicketId : job?.acceptedTicketId });
   } catch (err) {
     console.error('GET /api/jobs/:id error', err);
     return res.status(500).json({ ok: false, message: err.message });
