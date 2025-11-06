@@ -203,6 +203,11 @@ export const findNearestUsers = async (req, res) => {
       limit            // optional, how many to return (default 3)
     } = req.query;
 
+    console.log("Latitude" , latitude)
+    console.log("Longitude" , longitude)
+    console.log("radius" , radius)
+    console.log("targetCity" , targetCity)
+
     // --- basic validation ---
     if (!latitude || !longitude) {
       return res.status(400).json({

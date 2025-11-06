@@ -9,13 +9,13 @@ export async function notifyDriverOnAccept(ticketData, mechanicId) {
   try {
     const driverPhone = ticketData?.cf?.cf_driver_phone_number;
     if (!driverPhone) {
-      console.log('No driver phone available for this job:', job._id);
+      console.log('No driver phone available for this driver:', driverPhone);
       return;
     }
 
     const mechanic = await User.findById(mechanicId);
 
-    console.log('Mechanic:', mechanic);
+    // console.log('Mechanic:', mechanic);
     if (!mechanic) {
       console.log('Mechanic not found:', mechanicId);
       return;
