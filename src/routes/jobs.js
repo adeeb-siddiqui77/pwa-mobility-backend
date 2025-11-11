@@ -2,6 +2,7 @@
 import express from 'express';
 import JobAssignment from '../models/JobAssignment.js';
 import { startAttempt } from '../services/socketService.js';
+import Ticket from '../models/Ticket.js';
 
 const router = express.Router();
 
@@ -48,7 +49,9 @@ router.get('/:id', async (req, res) => {
   try {
     const job = await JobAssignment.findById(req.params.id);
     if (!job) return res.status(404).json({ ok: false, message: 'not found' });
-    return res.json({ ok: true, job : job?.status , acceptedTicketId : job?.acceptedTicketId });
+
+    const cf = await Ticket.findOne({ zohoTicketId : job?.acceptedTicketId });
+    return res.json({ ok: true, job : job?.status , acceptedTicketId : job?.acceptedTicketId , eta : job?.eta , pitstopDetails : {name : cf?.cf?.cf_pitstop_name , contact : cf?.cf?.cf_pitstop_contact , location : cf?.cf?.cf_pitstop_location , issue : cf?.cf?.cf_issue} });
   } catch (err) {
     console.error('GET /api/jobs/:id error', err);
     return res.status(500).json({ ok: false, message: err.message });
