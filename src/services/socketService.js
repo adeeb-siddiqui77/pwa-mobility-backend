@@ -180,7 +180,8 @@ export async function startAttempt(jobId, attemptIndex) {
     slaSeconds: SLA_SECONDS,
     expiresAt: expiresAt.toISOString(),
     ticketSummary: job.ticketData?.subject,
-    customerPhone: job.ticketData?.phone
+    customerPhone: job.ticketData?.phone,
+    serverTime: now.toISOString()
   };
 
   // 1) PWA popup

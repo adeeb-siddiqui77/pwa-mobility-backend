@@ -12,7 +12,7 @@ const router = express.Router();
  */
 router.post('/', async (req, res) => {
   try {
-    const { ticketData, issue, eta, sortedMechanicIds , roomName } = req.body;
+    const { ticketData, issue, eta, sortedMechanicIds, roomName } = req.body;
     if (!sortedMechanicIds || !Array.isArray(sortedMechanicIds) || sortedMechanicIds.length === 0) {
       return res.status(400).json({ ok: false, message: 'sortedMechanicIds required' });
     }
@@ -50,8 +50,14 @@ router.get('/:id', async (req, res) => {
     const job = await JobAssignment.findById(req.params.id);
     if (!job) return res.status(404).json({ ok: false, message: 'not found' });
 
-    const cf = await Ticket.findOne({ zohoTicketId : job?.acceptedTicketId });
-    return res.json({ ok: true, job : job?.status , acceptedTicketId : job?.acceptedTicketId , eta : job?.eta , pitstopDetails : {name : cf?.cf?.cf_pitstop_name , contact : cf?.cf?.cf_pitstop_contact , location : cf?.cf?.cf_pitstop_location , issue : cf?.cf?.cf_issue} });
+    const cf = await Ticket.findOne({ zohoTicketId: job?.acceptedTicketId });
+
+    console.log("Returning Job Status --------------->")
+    console.log("job status ---->", job?.status)
+    console.log("job acceptedTicketId ---->", job?.acceptedTicketId)
+    console.log("job pitstopDetails ---->", cf?.cf?.cf_pitstop_name)
+
+    return res.json({ ok: true, job: job?.status, acceptedTicketId: job?.acceptedTicketId, eta: job?.eta, pitstopDetails: { name: cf?.cf?.cf_pitstop_name, contact: cf?.cf?.cf_pitstop_contact, location: cf?.cf?.cf_pitstop_location, issue: cf?.cf?.cf_issue } });
   } catch (err) {
     console.error('GET /api/jobs/:id error', err);
     return res.status(500).json({ ok: false, message: err.message });

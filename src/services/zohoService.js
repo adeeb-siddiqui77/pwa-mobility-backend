@@ -53,7 +53,7 @@ export async function createZohoTicketForMechanic(ticketData, mechanicId) {
   const zohoTicketData = { ...ticketData };
 
 
-  // console.log("Creating Zoho ticket with data:", zohoTicketData);
+  console.log("Creating Zoho ticket with data:", zohoTicketData);
 
   // Call Zoho
   const config = {
