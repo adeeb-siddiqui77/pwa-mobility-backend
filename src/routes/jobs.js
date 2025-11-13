@@ -53,6 +53,7 @@ router.get('/:id', async (req, res) => {
     const cf = await Ticket.findOne({ zohoTicketId: job?.acceptedTicketId });
 
     console.log("Returning Job Status --------------->")
+    console.log("job object" , job)
     console.log("job status ---->", job?.status)
     console.log("job acceptedTicketId ---->", job?.acceptedTicketId)
     console.log("job pitstopDetails ---->", cf?.cf?.cf_pitstop_name)
