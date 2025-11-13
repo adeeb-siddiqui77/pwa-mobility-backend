@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { getValidAccessToken } from '../services/tokenService.js';
+import { generateAccessToken, getValidAccessToken } from '../services/tokenService.js';
 import Ticket from '../models/Ticket.js';
 import Users from '../models/User.js';
 import mongoose from "mongoose";
@@ -282,7 +282,7 @@ export const updateTicket = async (req, res) => {
         const { ticketId } = req.params;
         let { data , tokenDetails} = req.body;
 
-        console.log("Update request received for ticketId:", ticketId, "with data:", data, "and tokenDetails:", tokenDetails);
+        // console.log("Update request received for ticketId:", ticketId, "with data:", data, "and tokenDetails:", tokenDetails);
 
         if (!ticketId) {
             return res.status(400).json({
@@ -298,8 +298,13 @@ export const updateTicket = async (req, res) => {
             });
         }
 
-        tokenDetails = await getValidAccessToken(tokenDetails);
+        // tokenDetails = await getValidAccessToken(tokenDetails);
+        tokenDetails = await generateAccessToken({accessToken: null, expiresAt: null});
         console.log("Valid access token:", tokenDetails.accessToken);
+
+
+
+        console.log("Data:", data);
 
         // Update in Zoho
         const config = {
@@ -352,7 +357,7 @@ export const updateTicket = async (req, res) => {
 export const updateTicketinMongo = async (req, res) => {
     try {
         const { ticketId } = req.params;
-        const { preRepairPhotos, workDetails, postRepairPhotos } = req.body;
+        const { preRepairPhotos, workDetails, postRepairPhotos , status } = req.body;
 
         console.log("Update request received for ticketId:", ticketId, "with data:", preRepairPhotos, workDetails, postRepairPhotos);
         
@@ -370,6 +375,7 @@ export const updateTicketinMongo = async (req, res) => {
                     preRepairPhotos, 
                     workDetails, 
                     postRepairPhotos,
+                    status,
                     updatedAt: new Date()
                 }
             },
