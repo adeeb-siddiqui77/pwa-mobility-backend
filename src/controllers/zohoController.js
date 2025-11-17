@@ -277,6 +277,7 @@ export const createTicket = async (req, res) => {
 //     }
 // };
 
+
 export const updateTicket = async (req, res) => {
     try {
         const { ticketId } = req.params;
