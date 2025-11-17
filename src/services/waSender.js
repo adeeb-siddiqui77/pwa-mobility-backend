@@ -18,9 +18,25 @@ const client = axios.create({
 
 // Plain text message (always rendered)
 export async function sendSimpleMessage({ to, text }) {
-  const { data } = await client.post("/api/send-message", { to, text });
-  const messageId = data?.data?.msgId || null;
-  return { messageId, raw: data };
+  try {
+    const { data } = await client.post("/api/send-message", { to, text });
+
+    const messageId = data?.data?.msgId || null;
+
+    return {
+      messageId,
+      raw: data,
+    };
+
+  } catch (error) {
+    console.error("sendSimpleMessage error:", error?.response?.data || error);
+
+    return {
+      success: false,
+      messageId: null,
+      error: error?.response?.data || error?.message || "Unknown error",
+    };
+  }
 }
 
 export async function sendJobPollMessage({ to, question = "Do you accept this job?" }) {

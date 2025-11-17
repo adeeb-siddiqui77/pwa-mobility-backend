@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     // Adding file upload fields
     adharCard: {
         type: String, // This will store the file path or URL
-      
+
     },
     loiForm: {
         type: String
@@ -52,6 +52,14 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    fraudStatus: {
+        type: String,
+        enum: ["none", "fraud", "under_review"],
+        default: "none"
+    },
+    fraudNote: { type: String },
+    fraudUpdatedAt: { type: Date },
+
 
 
     // Extra fields from Excel, all optional
