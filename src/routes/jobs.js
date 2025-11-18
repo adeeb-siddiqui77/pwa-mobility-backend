@@ -17,6 +17,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ ok: false, message: 'sortedMechanicIds required' });
     }
 
+
+    console.log("---------Sorted Mechanics IDS ------------" , sortedMechanicIds)
+
     const attempts = sortedMechanicIds.map((mid, idx) => ({
       index: idx,
       mechanicId: mid,
