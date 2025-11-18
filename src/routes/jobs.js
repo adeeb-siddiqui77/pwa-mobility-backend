@@ -52,11 +52,11 @@ router.get('/:id', async (req, res) => {
 
     const cf = await Ticket.findOne({ zohoTicketId: job?.acceptedTicketId });
 
-    console.log("Returning Job Status --------------->")
-    console.log("job object" , job)
-    console.log("job status ---->", job?.status)
-    console.log("job acceptedTicketId ---->", job?.acceptedTicketId)
-    console.log("job pitstopDetails ---->", cf?.cf?.cf_pitstop_name)
+    // console.log("Returning Job Status --------------->")
+    // console.log("job object" , job)
+    // console.log("job status ---->", job?.status)
+    // console.log("job acceptedTicketId ---->", job?.acceptedTicketId)
+    // console.log("job pitstopDetails ---->", cf?.cf?.cf_pitstop_name)
 
     return res.json({ ok: true, job: job?.status, acceptedTicketId: job?.acceptedTicketId, eta: job?.eta, pitstopDetails: { name: cf?.cf?.cf_pitstop_name, contact: cf?.cf?.cf_pitstop_contact, location: cf?.cf?.cf_pitstop_location, issue: cf?.cf?.cf_issue } });
   } catch (err) {
