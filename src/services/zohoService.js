@@ -3,9 +3,19 @@ import mongoose from 'mongoose';
 import axios from 'axios';
 import User from '../models/User.js'
 import Ticket from '../models/Ticket.js';
-
-
 import { generateAccessToken, getValidAccessToken } from './tokenService.js';
+
+
+import FormData from 'form-data';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from "url";
+
+// Fix __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 
 
 export async function createZohoTicketForMechanic(ticketData, mechanicId) {
@@ -174,7 +184,7 @@ export const updateZohoTicketStatusFraudRule = async (ticketId, zohoStatus, data
 
   console.log(ticketId, zohoStatus, data, fraudType)
 
-  console.log("data" , data)
+  console.log("data", data)
   try {
     if (!ticketId) {
       throw {
@@ -254,3 +264,63 @@ export const updateZohoTicketStatusFraudRule = async (ticketId, zohoStatus, data
     };
   }
 };
+
+
+export const uploadAttachmentToZohoTicket = async (ticketId, fileUrls, orgId) => {
+
+  const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
+  const results = [];
+
+  const tokenDetails = await generateAccessToken({
+    accessToken: null,
+    expiresAt: null
+  });
+
+
+  for (const fileUrl of urls) {
+    try {
+
+      // Download file as stream
+      const fileStream = await axios.get(fileUrl, { responseType: "stream" });
+
+      // Create form
+      const form = new FormData();
+      form.append("file", fileStream.data, {
+        filename: path.basename(fileUrl),
+      });
+
+
+      const url = `https://desk.zoho.in/api/v1/tickets/${ticketId}/attachments`;
+      const headers = {
+        ...form.getHeaders(),
+        'Authorization': `Zoho-oauthtoken ${tokenDetails.accessToken}`,
+        'orgId': orgId,
+      };
+
+
+      const resp = await axios.post(url, form, { headers });
+      console.log('Upload response of attachment:', resp.data);
+      return resp.data; // contains details of attachment
+
+
+
+    } catch (error) {
+      console.error('Error uploading attachment:', err.response?.data || err.message);
+      throw err;
+    }
+  }
+
+}
+
+const filePaths = [path.join(__dirname, "../..", "uploads", "kycImage-1757498741475-236737321.png")]
+
+// uploadAttachmentToZohoTicket(
+//   "210686000000947661",
+//   filePaths,
+//   "60046723098"
+// );
+// uploadAttachmentToZohoTicket(
+//   "210686000000947661",
+//   "https://dwzytf8fljslz.cloudfront.net/22699_JK_Tyre_Website_Individual_Banners_05_a7c332734e.jpg?format=auto&width=384&quality=75",
+//   "60046723098"
+// );
