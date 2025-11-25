@@ -14,6 +14,7 @@ import driverRoutes from './routes/driver.js';
 import rateCardRoutes from './routes/rateCard.js';
 import wasenderWebhook from './routes/wasenderWebhook.js';
 import jobsRoutes from './routes/jobs.js';
+import ocrRoutes from "./routes/ocr.js"
 
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/zoho', zohoRoutes);
 app.use('/api/driver', driverRoutes);
 app.use('/api/rate-card', rateCardRoutes);
 app.use('/api/jobs', jobsRoutes);
+app.use('/api/ocr' , ocrRoutes)
 app.use('/webhooks/wasender', express.json({ type: '*/*' }), wasenderWebhook);
 
 
