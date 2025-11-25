@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import fs from "fs";
 import OpenAI from "openai";
+import Ticket from "../models/Ticket.js";
 
 const router = express.Router();
 
@@ -43,15 +44,9 @@ async function readPlate(imageUrlOrBase64) {
 router.post("/number-plate", upload.single("image"), async (req, res) => {
     try {
         let imageInput;
-
-        console.log("req.body" , req.body)
-
-        // Case: image URL
         if (req.body.imageUrl) {
             imageInput = req.body.imageUrl;
         }
-
-        // Case: uploaded file
         else if (req.file) {
             const buffer = fs.readFileSync(req.file.path);
             fs.unlinkSync(req.file.path);
@@ -68,9 +63,25 @@ router.post("/number-plate", upload.single("image"), async (req, res) => {
 
         const numberPlate = await readPlate(imageInput);
 
+        let ticketId = req.body.ticketId;
+        let raisedVehicleNumber ;
+
+        const response = await Ticket.findOne({zohoTicketId : ticketId})
+        raisedVehicleNumber = response?.cf?.cf_driver_vehicle_number
+
+        if(numberPlate == raisedVehicleNumber){
+            return res.json({
+                success: true,
+                message : "The Vehicle is verified .",
+                numberPlate
+            });
+        }
+
         return res.json({
-            success: true,
-            numberPlate
+            success: false,
+            message : "The Vechicle is not verified",
+            ocrPlate : numberPlate,
+            ticketPlate : raisedVehicleNumber
         });
 
     } catch (err) {
