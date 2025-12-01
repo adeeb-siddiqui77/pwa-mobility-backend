@@ -159,25 +159,6 @@ export async function postMessage(req, res) {
                 session.flowIndex = flowIndexBefore + 1;
                 await session.save();
             },
-            // 4: async ()=> { // issues will come in this 
-            //     let chatElem = session?.messages[session.messages.length -1]
-            //     let selectedIssues = chatElem?.meta?.issues
-
-            //     console.log('selectedIssues' , selectedIssues)
-
-            //     // Calling function to get mapping accordingly
-
-            //     const result = await getNextValues(selectedIssues)
-
-            //     console.log("result of mapping" , result)
-
-            //     console.log(result[selectedIssues[0]])
-
-            //     session.messages.push({who : 'bot' , text : "Please select approach" , meta: { type: "checkbox", options : selectedIssues } })
-            //     // session.flowIndex = flowIndexBefore + 1
-
-            //     await session.save()
-            // },
             4: async () => {
                 let chatElem = session?.messages[session.messages.length - 1];
                 let selectedIssues = chatElem?.meta?.issues;
@@ -185,73 +166,30 @@ export async function postMessage(req, res) {
                 // console.log('selectedIssues', selectedIssues);
 
                 const result = await getNextValues(selectedIssues);
+                console.log("inside index4")
 
-                console.log("result is ", result)
-
-                // BUILD MULTI-DROPDOWN MESSAGES PER ISSUE
-                // for (const issue of selectedIssues) {
-                //     const mapping = result[issue];
-
-                //     console.log("mapping" , mapping)
-
-                //     console.log("mapping.tyreType" , mapping.tyreType)
-
-                //     const steps = [];
-
-                //     if (mapping.tyreType && mapping.tyreType.length > 0) {
-                //         steps.push({
-                //             step: "tyreType",
-                //             options: mapping.tyreType
-                //         });
-                //     }
-
-                //     if (mapping.approach && mapping.approach.length > 0) {
-                //         steps.push({
-                //             step: "approach",
-                //             options: mapping.approach
-                //         });
-                //     }
-
-                //     if (mapping.patch && mapping.patch.length > 0) {
-                //         steps.push({
-                //             step: "patch",
-                //             options: mapping.patch
-                //         });
-                //     }
-
-                //     session.messages.push({
-                //         who: "bot",
-                //         text: `Please provide values for ${issue}`,
-                //         meta: {
-                //             type: "multi-step",   // UI identifies this as 3 dropdown message
-                //             service: issue,        // to identify which issue this belongs to
-                //             steps                  // array of dropdowns
-                //         }
-                //     });
-                // }
+                console.log("session in step4" , session)
 
 
-                // for (let issue of selectedIssues) {
-                //     const steps = Object.entries(result[issue]).map(([stepKey, options]) => {
-                //         return {
-                //             step: stepKey,
-                //             options: options   // array including empty ""
-                //         }
-                //     });
+                if(session.messages[session.messages.length - 1].meta.step == "finalMapping"){
+                    session.messages.push({ who: 'bot', text: 'Please upload a photo of the repaired tyre for completion proof.', createdAt: new Date() })
+                    session.flowIndex = flowIndexBefore + 1;
+                    await session.save();
+                }
+            },
+            5 : async () =>{
+                if (!imageUrl) return { ok: false, message: 'No repaired tyre image provided' };
+                
+                console.log('imageUrl inside the post repaired' , imageUrl)
+                session.messages.push({ who: 'bot', text: 'Image received and saved successfully Updating your service summary…', createdAt: new Date() })
+                session.messages.push({ who: 'bot', text: 'Here’s the rate card for the services you provided:', createdAt: new Date() , meta : {rateCard : "value"} })
+                // session.messages.push({ who: 'bot', text: 'Please confirm the services to generate the invoice.', createdAt: new Date() , meta : {rateCardConfirmation : "this will contain that"} })
 
-                //     session.messages.push({
-                //         who: "bot",
-                //         text: `Please complete steps for ${issue}`,
-                //         meta: {
-                //             type: "multi-step",
-                //             service: issue,
-                //             steps
-                //         }
-                //     });
-                // }
+                session.flowIndex = flowIndexBefore + 1;
 
-                // session.flowIndex = flowIndexBefore + 1
-                // await session.save();
+                await session.save()
+
+                
             }
 
             // add more handlers as needed for other steps
