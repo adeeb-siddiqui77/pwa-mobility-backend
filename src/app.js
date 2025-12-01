@@ -16,6 +16,7 @@ import wasenderWebhook from './routes/wasenderWebhook.js';
 import jobsRoutes from './routes/jobs.js';
 import ocrRoutes from "./routes/ocr.js"
 import jobChatRoutes from './routes/jobChat.js'
+import issueMappingRoutes from "./routes/issues.js"
 
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use('/api/rate-card', rateCardRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/ocr' , ocrRoutes)
 app.use('/api/jobchat' , jobChatRoutes)
+app.use('/api/issues' , issueMappingRoutes )
 app.use('/webhooks/wasender', express.json({ type: '*/*' }), wasenderWebhook);
 
 

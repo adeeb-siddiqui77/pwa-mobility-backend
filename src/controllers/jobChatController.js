@@ -46,14 +46,14 @@ export async function getSession(req, res) {
 
         // fetch driver details via ticketId
 
-        const response = await Ticket.findOne({zohoTicketId : ticketId})
+        const response = await Ticket.findOne({ zohoTicketId: ticketId })
         let driverName = response?.cf?.cf_driver_name
         let driverPhone = response?.cf?.cf_driver_phone_number
 
         let session = await JobChatSession.findOne({ ticketId, mechanicId });
         if (!session) {
             // create session with initial bot messages persisted
-            const initialMessages = makeInitialBotMessagesServer(ticketId, driverName ,driverPhone );
+            const initialMessages = makeInitialBotMessagesServer(ticketId, driverName, driverPhone);
             session = await JobChatSession.create({
                 ticketId,
                 mechanicId,
@@ -91,9 +91,9 @@ export async function postMessage(req, res) {
 
         // find the ticketObject
 
-        const ticketDetails = await Ticket.findOne({zohoTicketId : ticketId})
+        const ticketDetails = await Ticket.findOne({ zohoTicketId: ticketId })
 
-        console.log("ticketDetails" , ticketDetails)
+        // console.log("ticketDetails", ticketDetails)
 
         // Save uploaded file (if any) and get public URL
         let imageUrl = null;
@@ -101,7 +101,7 @@ export async function postMessage(req, res) {
             // uploadFileToStorage should return a public URL
             imageUrl = await uploadFileToStorage(req.file);
 
-            console.log("imageURL" , imageUrl)
+            console.log("imageURL", imageUrl)
         }
 
         const who = req.body.who || 'mechanic';
@@ -123,9 +123,9 @@ export async function postMessage(req, res) {
         const handlers = {
             1: async () => { // vehicle plate verify
                 if (!imageUrl) return { ok: false, message: 'No image provided' };
-                const plateResult = await verifyVehiclePlate(imageUrl, ticketId ); // implement this
+                const plateResult = await verifyVehiclePlate(imageUrl, ticketId); // implement this
 
-                console.log("plateResult" , plateResult)
+                console.log("plateResult", plateResult)
 
                 if (plateResult.success) {
                     session.messages.push({ who: 'bot', text: `The vehicle ${plateResult.ocrPlate} is verified.`, createdAt: new Date() });
@@ -138,11 +138,11 @@ export async function postMessage(req, res) {
             },
             2: async () => { // stencil verify
                 if (!imageUrl) return { ok: false, message: 'No image provided' };
-                const stencilResult = await verifyStencil(imageUrl );
+                const stencilResult = await verifyStencil(imageUrl);
 
                 if (stencilResult.success) {
                     session.messages.push({ who: 'bot', text: `The stencil number ${stencilResult.stencilNumber} is verified`, createdAt: new Date() });
-                    session.messages.push({who:'bot' , text : 'Capture and upload a photo of tyre issues' , createdAt : new Date() })
+                    session.messages.push({ who: 'bot', text: 'Capture and upload a photo of tyre issues', createdAt: new Date() })
                     session.flowIndex = flowIndexBefore + 1; // advance to issue selection step
                 } else {
                     session.messages.push({ who: 'bot', text: `Stencil verification failed: ${stencilResult.message || 'Unknown'}`, createdAt: new Date() });
@@ -155,7 +155,7 @@ export async function postMessage(req, res) {
 
 
 
-                session.messages.push({who:'bot' , text : 'Before you get started, just pick the issues from the list below.' , createdAt : new Date() })
+                session.messages.push({ who: 'bot', text: 'Before you get started, just pick the issues from the list below.', createdAt: new Date() })
                 session.flowIndex = flowIndexBefore + 1;
                 await session.save();
             },
@@ -178,63 +178,82 @@ export async function postMessage(req, res) {
 
             //     await session.save()
             // },
-            4: async ()=> { 
-                let chatElem = session?.messages[session.messages.length -1];
+            4: async () => {
+                let chatElem = session?.messages[session.messages.length - 1];
                 let selectedIssues = chatElem?.meta?.issues;
-            
-                console.log('selectedIssues', selectedIssues);
-            
+
+                // console.log('selectedIssues', selectedIssues);
+
                 const result = await getNextValues(selectedIssues);
 
-                console.log("result is " , result)
-            
+                console.log("result is ", result)
+
                 // BUILD MULTI-DROPDOWN MESSAGES PER ISSUE
-                for (const issue of selectedIssues) {
-                    const mapping = result[issue];
+                // for (const issue of selectedIssues) {
+                //     const mapping = result[issue];
 
-                    console.log("mapping" , mapping)
+                //     console.log("mapping" , mapping)
 
-                    console.log("mapping.tyreType" , mapping.tyreType)
-            
-                    const steps = [];
-            
-                    if (mapping.tyreType && mapping.tyreType.length > 0) {
-                        steps.push({
-                            step: "tyreType",
-                            options: mapping.tyreType
-                        });
-                    }
-            
-                    if (mapping.approach && mapping.approach.length > 0) {
-                        steps.push({
-                            step: "approach",
-                            options: mapping.approach
-                        });
-                    }
-            
-                    if (mapping.patch && mapping.patch.length > 0) {
-                        steps.push({
-                            step: "patch",
-                            options: mapping.patch
-                        });
-                    }
-            
-                    session.messages.push({
-                        who: "bot",
-                        text: `Please provide values for ${issue}`,
-                        meta: {
-                            type: "multi-step",   // UI identifies this as 3 dropdown message
-                            service: issue,        // to identify which issue this belongs to
-                            steps                  // array of dropdowns
-                        }
-                    });
-                }
+                //     console.log("mapping.tyreType" , mapping.tyreType)
 
-                session.flowIndex = flowIndexBefore + 1
-            
-                await session.save();
+                //     const steps = [];
+
+                //     if (mapping.tyreType && mapping.tyreType.length > 0) {
+                //         steps.push({
+                //             step: "tyreType",
+                //             options: mapping.tyreType
+                //         });
+                //     }
+
+                //     if (mapping.approach && mapping.approach.length > 0) {
+                //         steps.push({
+                //             step: "approach",
+                //             options: mapping.approach
+                //         });
+                //     }
+
+                //     if (mapping.patch && mapping.patch.length > 0) {
+                //         steps.push({
+                //             step: "patch",
+                //             options: mapping.patch
+                //         });
+                //     }
+
+                //     session.messages.push({
+                //         who: "bot",
+                //         text: `Please provide values for ${issue}`,
+                //         meta: {
+                //             type: "multi-step",   // UI identifies this as 3 dropdown message
+                //             service: issue,        // to identify which issue this belongs to
+                //             steps                  // array of dropdowns
+                //         }
+                //     });
+                // }
+
+
+                // for (let issue of selectedIssues) {
+                //     const steps = Object.entries(result[issue]).map(([stepKey, options]) => {
+                //         return {
+                //             step: stepKey,
+                //             options: options   // array including empty ""
+                //         }
+                //     });
+
+                //     session.messages.push({
+                //         who: "bot",
+                //         text: `Please complete steps for ${issue}`,
+                //         meta: {
+                //             type: "multi-step",
+                //             service: issue,
+                //             steps
+                //         }
+                //     });
+                // }
+
+                // session.flowIndex = flowIndexBefore + 1
+                // await session.save();
             }
-            
+
             // add more handlers as needed for other steps
         };
 
