@@ -3,6 +3,8 @@ import { uploadFileToStorage } from '../utils/fileUpload.js'; // implement or re
 import { verifyVehiclePlate, verifyStencil } from '../services/verificationService.js'; // see notes
 import mongoose from 'mongoose';
 import Ticket from '../models/Ticket.js';
+import { getNextValues } from '../services/issueMapping.js';
+import { IssueModel } from '../models/IssueSchema.js';
 
 /**
  * GET /api/jobchat/:ticketId
@@ -87,11 +89,19 @@ export async function postMessage(req, res) {
             session = await JobChatSession.create({ ticketId, mechanicId, messages: [], flowIndex: 0 });
         }
 
+        // find the ticketObject
+
+        const ticketDetails = await Ticket.findOne({zohoTicketId : ticketId})
+
+        console.log("ticketDetails" , ticketDetails)
+
         // Save uploaded file (if any) and get public URL
         let imageUrl = null;
         if (req.file) {
             // uploadFileToStorage should return a public URL
             imageUrl = await uploadFileToStorage(req.file);
+
+            console.log("imageURL" , imageUrl)
         }
 
         const who = req.body.who || 'mechanic';
@@ -139,19 +149,92 @@ export async function postMessage(req, res) {
                 }
                 await session.save();
             },
-            3: async () => { // stencil verify
-                if (!imageUrl) return { ok: false, message: 'No image provided' };
-                const stencilResult = await verifyStencil(imageUrl );
+            3: async () => { // tyre issue image
+                if (!imageUrl) return { ok: false, message: 'No tyre issue image provided' };
+                // const stencilResult = await verifyStencil(imageUrl );
 
-                if (stencilResult.success) {
-                    session.messages.push({ who: 'bot', text: `The stencil number ${stencilResult.stencilNumber} is verified`, createdAt: new Date() });
-                    session.messages.push({who:'bot' , text : 'Capture and upload a photo of tyre issues' , createdAt : new Date() })
-                    session.flowIndex = flowIndexBefore + 1; // advance to issue selection step
-                } else {
-                    session.messages.push({ who: 'bot', text: `Stencil verification failed: ${stencilResult.message || 'Unknown'}`, createdAt: new Date() });
+
+
+                session.messages.push({who:'bot' , text : 'Before you get started, just pick the issues from the list below.' , createdAt : new Date() })
+                session.flowIndex = flowIndexBefore + 1;
+                await session.save();
+            },
+            // 4: async ()=> { // issues will come in this 
+            //     let chatElem = session?.messages[session.messages.length -1]
+            //     let selectedIssues = chatElem?.meta?.issues
+
+            //     console.log('selectedIssues' , selectedIssues)
+
+            //     // Calling function to get mapping accordingly
+
+            //     const result = await getNextValues(selectedIssues)
+
+            //     console.log("result of mapping" , result)
+
+            //     console.log(result[selectedIssues[0]])
+
+            //     session.messages.push({who : 'bot' , text : "Please select approach" , meta: { type: "checkbox", options : selectedIssues } })
+            //     // session.flowIndex = flowIndexBefore + 1
+
+            //     await session.save()
+            // },
+            4: async ()=> { 
+                let chatElem = session?.messages[session.messages.length -1];
+                let selectedIssues = chatElem?.meta?.issues;
+            
+                console.log('selectedIssues', selectedIssues);
+            
+                const result = await getNextValues(selectedIssues);
+
+                console.log("result is " , result)
+            
+                // BUILD MULTI-DROPDOWN MESSAGES PER ISSUE
+                for (const issue of selectedIssues) {
+                    const mapping = result[issue];
+
+                    console.log("mapping" , mapping)
+
+                    console.log("mapping.tyreType" , mapping.tyreType)
+            
+                    const steps = [];
+            
+                    if (mapping.tyreType && mapping.tyreType.length > 0) {
+                        steps.push({
+                            step: "tyreType",
+                            options: mapping.tyreType
+                        });
+                    }
+            
+                    if (mapping.approach && mapping.approach.length > 0) {
+                        steps.push({
+                            step: "approach",
+                            options: mapping.approach
+                        });
+                    }
+            
+                    if (mapping.patch && mapping.patch.length > 0) {
+                        steps.push({
+                            step: "patch",
+                            options: mapping.patch
+                        });
+                    }
+            
+                    session.messages.push({
+                        who: "bot",
+                        text: `Please provide values for ${issue}`,
+                        meta: {
+                            type: "multi-step",   // UI identifies this as 3 dropdown message
+                            service: issue,        // to identify which issue this belongs to
+                            steps                  // array of dropdowns
+                        }
+                    });
                 }
+
+                session.flowIndex = flowIndexBefore + 1
+            
                 await session.save();
             }
+            
             // add more handlers as needed for other steps
         };
 
