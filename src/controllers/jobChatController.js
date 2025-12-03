@@ -95,7 +95,6 @@ export async function postMessage(req, res) {
 
         // console.log("ticketDetails", ticketDetails)
 
-        // Save uploaded file (if any) and get public URL
         let imageUrl = null;
         if (req.file) {
             // uploadFileToStorage should return a public URL
@@ -116,10 +115,6 @@ export async function postMessage(req, res) {
         // Save optimistic
         await session.save();
 
-        // If current step requires verification and a file exists, call verification service
-        // Map of step index -> handler (you can base on a central BOT_FLOW)
-        // Example: step 1 = vehicle plate verification, step 2 = stencil verification
-        // Adjust indices to match your flow
         const handlers = {
             1: async () => { // vehicle plate verify
                 if (!imageUrl) return { ok: false, message: 'No image provided' };
@@ -153,8 +148,6 @@ export async function postMessage(req, res) {
                 if (!imageUrl) return { ok: false, message: 'No tyre issue image provided' };
                 // const stencilResult = await verifyStencil(imageUrl );
 
-
-
                 session.messages.push({ who: 'bot', text: 'Before you get started, just pick the issues from the list below.', createdAt: new Date() })
                 session.flowIndex = flowIndexBefore + 1;
                 await session.save();
@@ -165,13 +158,16 @@ export async function postMessage(req, res) {
 
                 // console.log('selectedIssues', selectedIssues);
 
-                const result = await getNextValues(selectedIssues);
-                console.log("inside index4")
-
-                console.log("session in step4" , session)
-
-
                 if(session.messages[session.messages.length - 1].meta.step == "finalMapping"){
+
+                    console.log("finalServiceOptions" , session.messages[session.messages.length - 1].meta?.values)
+                    const result = session.messages.find(item => 
+                        item.text?.includes("Tyre Type : ") &&
+                        item.meta?.type === "mappingStep"
+                    );
+                    
+                    console.log("tyreType" , result?.text);
+                    
                     session.messages.push({ who: 'bot', text: 'Please upload a photo of the repaired tyre for completion proof.', createdAt: new Date() })
                     session.flowIndex = flowIndexBefore + 1;
                     await session.save();

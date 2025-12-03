@@ -22,7 +22,7 @@ export async function notifyDriverOnAccept(ticketData, mechanicId) {
     }
 
     const message =
-      `✅ *Job Accepted*\n\n` +
+      `✅ *Pitstop Details*\n\n` +
       `Name: ${mechanic?.shopName}\n` +
       `Address: ${mechanic?.address}\n` +
       `Contact: ${mechanic?.mobile}\n` +
