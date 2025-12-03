@@ -1,4 +1,6 @@
-// src/app.js
+import fetch from "node-fetch";
+globalThis.fetch = fetch;
+
 import express from 'express';
 import http from 'http';
 import dotenv from 'dotenv';
