@@ -1,0 +1,257 @@
+[
+  {
+    "issue": "Tyre burst",
+    "tyreType": "Tyre Type - Radial",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting,Mount/Demount"
+  },
+  {
+    "issue": "Tyre burst",
+    "tyreType": "Tyre Type - Radial",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre burst",
+    "tyreType": "Tyre Type - Nylon",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre burst",
+    "tyreType": "Tyre Type - Nylon",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre burst",
+    "tyreType": "Tubeless",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre burst",
+    "tyreType": "Tubeless",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre puncture",
+    "tyreType": "Tube type - Radial",
+    "approach": "Tube patch",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Tyre puncture",
+    "tyreType": "Tube type - Radial",
+    "approach": "Tube patch + Radial patch",
+    "patch": "Radial Patch list : 20,24,30,33,35,37,40,42,45",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture , Radial Patch"
+  },
+  {
+    "issue": "Tyre puncture",
+    "tyreType": "Tube type - Nylon",
+    "approach": "Tube patch",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Tyre puncture",
+    "tyreType": "Tube type - Nylon",
+    "approach": "Tube patch + Nylon patch",
+    "patch": "Nylon Patch list : 3,4,5,6,7,8,9,10",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture , Nylon Patch"
+  },
+  {
+    "issue": "Tyre puncture",
+    "tyreType": "Tubeless type",
+    "approach": "Tyre patch",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Tyre puncture",
+    "tyreType": "Tubeless type",
+    "approach": "Tyre patch + mushroom",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture , Mushroom Patch"
+  },
+  {
+    "issue": "Rim break/damage",
+    "tyreType": "",
+    "approach": "Rim replacement",
+    "patch": "",
+    "finalService": "Rim replacement"
+  },
+  {
+    "issue": "Rim break/damage",
+    "tyreType": "",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Air bulge",
+    "tyreType": "",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Air bulge",
+    "tyreType": "",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Air bulge",
+    "tyreType": "",
+    "approach": "Tyre rotation",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre runflat",
+    "tyreType": "",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService":  "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Tyre runflat",
+    "tyreType": "",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService":  "Wheel Assembly Open fitting , Mount/Demount"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Radial",
+    "approach": "Tube patch",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Radial",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Radial",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Radial",
+    "approach": "Tube patch + Radial patch",
+    "patch": "Radial Patch list : 20,24,30,33,35,37,40,42,45",
+    "finalService": "Wheel Assembly open fitting , Mount/demount , Puncture , Nylon Patch"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Nylon",
+    "approach": "Tube patch",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Nylon",
+    "approach": "Tube patch + Nylon patch",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Nylon",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tube type - Nylon",
+    "approach": "Stepney replacement",
+    "patch": "Nylon Patch list : 3,4,5,6,7,8,9,10",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount , Puncture , Nylon Patch"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tubeless type",
+    "approach": "Tyre patch",
+    "patch": "",
+    "finalService":  "Wheel Assembly Open fitting , Mount/Demount , Puncture"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tubeless type",
+    "approach": "Tyre patch + mushroom",
+    "patch": "",
+    "finalService":  "Wheel Assembly Open fitting , Mount/Demount , Puncture , Mushroom Patch"
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tubeless type",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService":  "Wheel Assembly Open fitting , Mount/Demount "
+  },
+  {
+    "issue": "Cuts/cracks/damage in sidewalls",
+    "tyreType": "Tubeless type",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService":  "Wheel Assembly Open fitting , Mount/Demount "
+  },
+  {
+    "issue": "Belt/tread separation",
+    "tyreType": "",
+    "approach": "Tyre replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount "
+  },
+  {
+    "issue": "Belt/tread separation",
+    "tyreType": "",
+    "approach": "Stepney replacement",
+    "patch": "",
+    "finalService": "Wheel Assembly Open fitting , Mount/Demount "
+  },
+  
+    {
+      "issue": "Wire expose",
+      "tyreType": "",
+      "approach": "Tyre replacement",
+      "patch": "",
+      "finalService": "Wheel Assembly Open fitting , Mount/Demount "
+    },
+    {
+      "issue": "Wire expose",
+      "tyreType": "",
+      "approach": "Stepney replacement",
+      "patch": "",
+      "finalService": "Wheel Assembly Open fitting , Mount/Demount "
+    },
+    {
+      "issue": "Wire expose",
+      "tyreType": "",
+      "approach": "Tyre rotation",
+      "patch": "",
+      "finalService": "Wheel Assembly Open fitting , Mount/Demount "
+    }
+  
+  
+]
