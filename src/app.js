@@ -20,7 +20,8 @@ import jobsRoutes from './routes/jobs.js';
 
 const ocrRoutes = (await import('./routes/ocr.js')).default;
 
-import jobChatRoutes from './routes/jobChat.js'
+// import jobChatRoutes from './routes/jobChat.js'
+const jobChatRoutes = (await import('./routes/jobChat.js')).default;
 import issueMappingRoutes from "./routes/issues.js"
 
 
