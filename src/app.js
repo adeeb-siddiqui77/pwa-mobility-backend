@@ -16,7 +16,10 @@ import driverRoutes from './routes/driver.js';
 import rateCardRoutes from './routes/rateCard.js';
 import wasenderWebhook from './routes/wasenderWebhook.js';
 import jobsRoutes from './routes/jobs.js';
-import ocrRoutes from "./routes/ocr.js"
+// import ocrRoutes from "./routes/ocr.js"
+
+const ocrRoutes = (await import('./routes/ocr.js')).default;
+
 import jobChatRoutes from './routes/jobChat.js'
 import issueMappingRoutes from "./routes/issues.js"
 
