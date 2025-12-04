@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import Ticket from '../models/Ticket.js';
 import { getNextValues } from '../services/issueMapping.js';
 import { IssueModel } from '../models/IssueSchema.js';
+import { calculateServiceCost } from '../services/rateCard.js';
 
 /**
  * GET /api/jobchat/:ticketId
@@ -161,14 +162,33 @@ export async function postMessage(req, res) {
                 if(session.messages[session.messages.length - 1].meta.step == "finalMapping"){
 
                     console.log("finalServiceOptions" , session.messages[session.messages.length - 1].meta?.values)
+
+                    let services = session.messages[session.messages.length - 1].meta?.values
+                    services = services[0].split(",")
+
+                    console.log("services array" , services)
                     const result = session.messages.find(item => 
                         item.text?.includes("Tyre Type : ") &&
                         item.meta?.type === "mappingStep"
                     );
+
+                    let str = result?.text
+                    let tyreType = str.substring(str.indexOf(":") + 1).trim();
                     
-                    console.log("tyreType" , result?.text);
                     
-                    session.messages.push({ who: 'bot', text: 'Please upload a photo of the repaired tyre for completion proof.', createdAt: new Date() })
+                    if (tyreType.includes('Tube Type')) {
+                        tyreType = 'tube';
+                    } else {
+                        tyreType = "tubeless";
+                    }
+                    console.log("Final tyreType -> " , tyreType);
+
+                    // Call function to fetch the rateCard accordingly                    
+                    const response = await calculateServiceCost(tyreType , services)
+
+                    console.log("response from the rateCard" , response)
+
+                    session.messages.push({ who: 'bot', text: 'Please upload a photo of the repaired tyre for completion proof.', createdAt: new Date() , meta : {finalRateCard : response} })
                     session.flowIndex = flowIndexBefore + 1;
                     await session.save();
                 }
@@ -178,7 +198,7 @@ export async function postMessage(req, res) {
                 
                 console.log('imageUrl inside the post repaired' , imageUrl)
                 session.messages.push({ who: 'bot', text: 'Image received and saved successfully Updating your service summary…', createdAt: new Date() })
-                session.messages.push({ who: 'bot', text: 'Here’s the rate card for the services you provided:', createdAt: new Date() , meta : {rateCard : "value"} })
+                session.messages.push({ who: 'bot', text: 'Here’s the rate card for the services you provided:', createdAt: new Date()})
                 // session.messages.push({ who: 'bot', text: 'Please confirm the services to generate the invoice.', createdAt: new Date() , meta : {rateCardConfirmation : "this will contain that"} })
 
                 session.flowIndex = flowIndexBefore + 1;
