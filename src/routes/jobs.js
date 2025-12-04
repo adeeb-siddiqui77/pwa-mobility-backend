@@ -68,4 +68,32 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
+router.get('/findExistingTicket/:vehicleNumber', async (req, res) => {
+  try {
+    const { vehicleNumber } = req.params;
+
+    console.log("inside this ticket")
+
+    const job = await Ticket.findOne({
+      "cf.cf_driver_vehicle_number": vehicleNumber
+    });
+
+    if (!job) {
+      return res.status(404).json({ ok: false, message: 'No Ticket Found' });
+    }
+
+    return res.json({
+      ok: true,
+      job,
+      message: "Existing Ticket Found"
+    });
+
+  } catch (err) {
+    console.error('GET /findExistingTicket error', err);
+    return res.status(500).json({ ok: false, message: err.message });
+  }
+});
+
+
 export default router;
