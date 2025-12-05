@@ -152,21 +152,21 @@ export const createTicket = async (req, res) => {
     try {
         let { mechanicId, ticketData } = req.body;
 
-        console.log("Mechanic ID:", mechanicId);
-        mechanicId = new mongoose.Types.ObjectId(mechanicId);
+        // console.log("Mechanic ID:", mechanicId);
+        // mechanicId = new mongoose.Types.ObjectId(mechanicId);
 
-        console.log("Received ticket creation request:", { mechanicId, ticketData });
+        // console.log("Received ticket creation request:", { mechanicId, ticketData });
 
-        // Find mechanic by mechanicId
-        const mechanic = await Users.findOne({ _id: mechanicId });
+        // // Find mechanic by mechanicId
+        // const mechanic = await Users.findOne({ _id: mechanicId });
 
-        console.log("Mechanic found:", mechanic);
-        if (!mechanic) {
-            return res.status(404).json({
-                error: 'Mechanic not found',
-                message: 'No mechanic found with the provided mechanicId'
-            });
-        }
+        // console.log("Mechanic found:", mechanic);
+        // if (!mechanic) {
+        //     return res.status(404).json({
+        //         error: 'Mechanic not found',
+        //         message: 'No mechanic found with the provided mechanicId'
+        //     });
+        // }
 
         const tokenDetails = await getValidAccessToken({
             accessToken: null,
@@ -206,7 +206,7 @@ export const createTicket = async (req, res) => {
         // Create replica in MongoDB
         const mongoTicket = await Ticket.create({
             zohoTicketId: zohoTicket.id,
-            mechanicId: mechanicId,
+            // mechanicId: mechanicId,
             ...zohoTicket
         });
 
