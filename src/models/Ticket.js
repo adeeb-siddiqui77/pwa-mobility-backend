@@ -9,7 +9,7 @@ const ticketSchema = new mongoose.Schema({
     mechanicId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        // required: true
     },
     entitySkills: [String],
     subCategory: String,
