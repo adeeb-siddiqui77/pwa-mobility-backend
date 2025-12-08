@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTickets, getMechanicTickets, updateTicketinMongo, createTicket, updateTicket } from '../controllers/zohoController.js';
+import { getTickets, getMechanicTickets, updateTicketinMongo, createTicket, updateTicket , getTicketById } from '../controllers/zohoController.js';
 import { handleFraudCheck } from '../controllers/fraudContoller.js';
 // import authMiddleware from '../middleware/authMiddleware.js';
 
@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Route to get tickets (protected by authentication)
 router.get('/tickets', getTickets);
+router.get('/ticket/:ticketId', getTicketById);
 
 // Route to get tickets (protected by authentication)
 router.get('/tickets/mechanic/:id', getMechanicTickets);
