@@ -1,8 +1,10 @@
 import fetch, { Headers, Request, Response } from 'node-fetch';
+import FormData from "form-data";
 global.fetch = fetch;
 global.Headers = Headers;
 global.Request = Request;
 global.Response = Response;
+global.FormData = FormData;
 
 import express from 'express';
 import http from 'http';
