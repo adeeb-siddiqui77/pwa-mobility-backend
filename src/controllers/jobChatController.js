@@ -12,13 +12,17 @@ import { calculateServiceCost } from '../services/rateCard.js';
  * returns existing session or creates a new one
  */
 
-function makeInitialBotMessagesServer(ticketId, driverName, driverPhone) {
+function makeInitialBotMessagesServer(ticketId, driverName, driverPhone , vechicleNumber) {
+
+
+    console.log("vechicleNumber" , vechicleNumber)
     const msgs = [];
 
     const detailsText =
-        `Hi there 👋\nHere are the details for your latest service ticket:\nTicket ID: ${ticketId}` +
+        `Hi there 👋\nHere are the details for your latest service ticket:` +
         (driverName ? `\nDriver Name: ${driverName}` : "") +
-        (driverPhone ? `\nContact: ${driverPhone}` : "");
+        (driverPhone ? `\nContact: ${driverPhone}` : "") +
+        (vechicleNumber ? `\nVehicle Number: ${vechicleNumber}` : "")
 
     msgs.push({
         who: 'bot',
@@ -50,11 +54,12 @@ export async function getSession(req, res) {
         const response = await Ticket.findOne({ zohoTicketId: ticketId })
         let driverName = response?.cf?.cf_driver_name
         let driverPhone = response?.cf?.cf_driver_phone_number
+        let vechicleNumber = response?.cf?.cf_driver_vehicle_number
 
         let session = await JobChatSession.findOne({ ticketId, mechanicId });
         if (!session) {
             // create session with initial bot messages persisted
-            const initialMessages = makeInitialBotMessagesServer(ticketId, driverName, driverPhone);
+            const initialMessages = makeInitialBotMessagesServer(ticketId, driverName, driverPhone , vechicleNumber);
             session = await JobChatSession.create({
                 ticketId,
                 mechanicId,

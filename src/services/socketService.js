@@ -181,7 +181,8 @@ export async function startAttempt(jobId, attemptIndex) {
     slaSeconds: SLA_SECONDS,
     expiresAt: expiresAt.toISOString(),
     ticketSummary: job.ticketData?.subject,
-    customerPhone: job.ticketData?.phone,
+    customerPhone: job.ticketData?.cf?.cf_driver_phone_number,
+    vehicleNumber: job.ticketData?.cf?.cf_driver_vehicle_number,
     serverTime: now.toISOString()
   };
 
