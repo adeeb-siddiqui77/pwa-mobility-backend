@@ -148,6 +148,20 @@ export const getTickets = async (req, res) => {
     }
 };
 
+export const getTicketById = async (req, res) => {
+    try {
+        const { ticketId } = req.params;
+        const ticket = await Ticket.findOne({ zohoTicketId: ticketId });
+        res.json({
+            data: ticket,
+            message: 'Ticket fetched successfully'
+        });
+    } catch (error) {
+        console.error('Error fetching ticket:', error);
+        res.status(500).json({ error: 'Failed to fetch ticket', message: error.message });
+    }
+};
+
 export const createTicket = async (req, res) => {
     try {
         let { mechanicId, ticketData } = req.body;
