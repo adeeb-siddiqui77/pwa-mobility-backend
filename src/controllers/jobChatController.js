@@ -203,7 +203,7 @@ export async function postMessage(req, res) {
                 
                 console.log('imageUrl inside the post repaired' , imageUrl)
                 session.messages.push({ who: 'bot', text: 'Image received and saved successfully Updating your service summary…', createdAt: new Date() })
-                session.messages.push({ who: 'bot', text: 'Here’s the rate card for the services you provided:', createdAt: new Date()})
+                session.messages.push({ who: 'bot', text: 'Here’s the rate card for the services you provided:', createdAt: new Date() , meta : {finalRateCard : true}})
                 // session.messages.push({ who: 'bot', text: 'Please confirm the services to generate the invoice.', createdAt: new Date() , meta : {rateCardConfirmation : "this will contain that"} })
 
                 session.flowIndex = flowIndexBefore + 1;
