@@ -5,6 +5,7 @@ import multer from "multer";
 import fs from "fs";
 import OpenAI from "openai";
 import Ticket from "../models/Ticket.js";
+import axios from "axios";
 
 const router = express.Router();
 
@@ -72,7 +73,7 @@ async function readImageText(imageUrlOrBase64, instruction) {
 
 export async function verifyVehiclePlate(imageInput, ticketId) {
 
-    console.log('image url inside plate verification' , imageInput)
+    console.log('image url inside plate verification', imageInput)
     try {
         const numberPlate = await readPlate(imageInput);
 
@@ -81,8 +82,8 @@ export async function verifyVehiclePlate(imageInput, ticketId) {
 
         return {
             success: numberPlate === raisedVehicleNumber,
-            message: numberPlate === raisedVehicleNumber 
-                ? "The vehicle is verified." 
+            message: numberPlate === raisedVehicleNumber
+                ? "The vehicle is verified."
                 : "The vehicle is not verified.",
             ocrPlate: numberPlate,
             ticketPlate: raisedVehicleNumber
@@ -98,7 +99,7 @@ export async function verifyVehiclePlate(imageInput, ticketId) {
 }
 
 
-export async function verifyStencil(imageInput){
+export async function verifyStencil(imageInput) {
     try {
         // Make sure we have an image input
         if (!imageInput) {
@@ -147,11 +148,51 @@ export async function verifyStencil(imageInput){
             };
         }
 
-        // Success response
+
+        // Clean the stencil before API call
+        const cleanStencil = stencil
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "");  // remove spaces & symbols
+
+
+        console.log("cleanStencil number" , cleanStencil)
+
+
+        const apiResponse = await axios.post(
+            "https://fleet.jktyre.co.in/api/v1/tyre/webhook/checkStencil",
+            { stencilNo: cleanStencil },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Basic YXBwbG9yZV9jb24xOmFwcGxvcmVfY29uMTIz"
+                },
+                validateStatus: () => true
+            }
+        );
+
+        const apiData = apiResponse.data;
+
+        if (apiData?.success === true) {
+            return {
+                success: true,
+                stencilNumber: cleanStencil,
+                jkTyreValidation: apiData
+            };
+        }
+
         return {
-            success: true,
-            stencilNumber: stencil
+            success: false,
+            stencilNumber: cleanStencil,
+            message: apiData?.message || "Stencil not found",
+            jkTyreValidation: apiData
         };
+
+        // Success response
+        // return {
+        //     success: true,
+        //     stencilNumber: stencil,
+        //     jkTyreValidation: apiResponse.data
+        // };
 
     } catch (error) {
         console.error("Stencil OCR ERROR:", error);
