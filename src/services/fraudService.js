@@ -6,6 +6,10 @@ import { updateZohoTicketStatusFraudRule } from "./zohoService.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+const escapeRegex = (str = "") =>
+    str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
+
 export async function checkFraudAndProcess({
     mechanicId,
     driverPhone,
@@ -79,7 +83,7 @@ export async function checkFraudAndProcess({
     const driverCount = driverPhone
         ? await JobHistory.countDocuments({
             mechanicId: mechId,
-            driverPhone: new RegExp(driverPhone + "$"),
+            driverPhone: new RegExp(escapeRegex(driverPhone) + "$"),
             createdAt: { $gte: since30 }
         })
         : 0;
@@ -129,7 +133,7 @@ export async function checkFraudAndProcess({
     const vehicleCount = regNumber
         ? await JobHistory.countDocuments({
             mechanicId: mechId,
-            regNumber: new RegExp(regNumber, "i"),
+            regNumber: new RegExp(escapeRegex(regNumber), "i"),
             createdAt: { $gte: since90 }
         })
         : 0;
