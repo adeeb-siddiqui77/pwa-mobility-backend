@@ -4,6 +4,7 @@ import { generateAccessToken, getValidAccessToken } from '../services/tokenServi
 import Ticket from '../models/Ticket.js';
 import Users from '../models/User.js';
 import mongoose from "mongoose";
+import { uploadAttachmentToZohoTicket } from '../services/zohoService.js';
 
 dotenv.config();
 
@@ -419,5 +420,57 @@ export const updateTicketinMongo = async (req, res) => {
     }
 };
 
+
+export const uploadAttachment = async (req, res) => {
+  try {
+    const { ticketId, orgId } = req.params;
+    const { fileUrls } = req.body;
+
+    // ✅ Basic validations
+    if (!ticketId) {
+      return res.status(400).json({
+        success: false,
+        message: "ticketId is required"
+      });
+    }
+
+    if (!orgId) {
+      return res.status(400).json({
+        success: false,
+        message: "orgId is required"
+      });
+    }
+
+    if (!fileUrls || (Array.isArray(fileUrls) && fileUrls.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: "fileUrls is required"
+      });
+    }
+
+    // ✅ Call your service
+    const result = await uploadAttachmentToZohoTicket(
+      ticketId,
+      fileUrls,
+      orgId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Attachment uploaded successfully",
+      data: result
+    });
+  } catch (error) {
+    console.error("Error uploading attachment:", error);
+
+    res.status(error.response?.status || 500).json({
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to upload attachment"
+    });
+  }
+};
 
 
