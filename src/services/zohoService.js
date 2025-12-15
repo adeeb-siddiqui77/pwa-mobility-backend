@@ -344,8 +344,8 @@ export const uploadAttachmentToZohoTicket = async (ticketId, fileUrls, orgId) =>
 
 
     } catch (error) {
-      console.error('Error uploading attachment:', err.response?.data || err.message);
-      throw err;
+      console.error('Error uploading attachment:', error.response?.data || error.message);
+      throw error;
     }
   }
 
