@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTickets, getMechanicTickets, updateTicketinMongo, createTicket, updateTicket , getTicketById } from '../controllers/zohoController.js';
+import { getTickets, getMechanicTickets, updateTicketinMongo, createTicket, updateTicket , getTicketById, uploadAttachment } from '../controllers/zohoController.js';
 import { handleFraudCheck } from '../controllers/fraudContoller.js';
 // import authMiddleware from '../middleware/authMiddleware.js';
 
@@ -26,7 +26,7 @@ router.patch('/tickets/:ticketId', updateTicket);
 
 router.patch('/ticket/updateViaFraud' , handleFraudCheck)
 
-// router.patch('/ticket/uploadAttachment' ,)
+router.patch('/ticket/uploadAttachment/:ticketId' ,uploadAttachment)
 
 
 
