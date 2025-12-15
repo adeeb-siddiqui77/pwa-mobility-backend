@@ -521,8 +521,10 @@ export const updateTicketinMongo = async (req, res) => {
 
 export const uploadAttachment = async (req, res) => {
   try {
-    const { ticketId, orgId } = req.params;
+    const { ticketId } = req.params;
     const { fileUrls } = req.body;
+
+    const orgId = process.env.ZOHO_ORG_ID
 
     // ✅ Basic validations
     if (!ticketId) {
@@ -546,16 +548,37 @@ export const uploadAttachment = async (req, res) => {
       });
     }
 
+    const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
+
     // ✅ Call your service
     const result = await uploadAttachmentToZohoTicket(
       ticketId,
-      fileUrls,
+      urls,
       orgId
     );
 
+
+    const updatedTicket = await Ticket.findOneAndUpdate(
+        { zohoTicketId: ticketId },
+        {
+          $addToSet: {
+            images: { $each: urls }
+          }
+        },
+        { new: true }
+      );
+  
+      if (!updatedTicket) {
+        return res.status(404).json({
+          success: false,
+          message: "Ticket not found"
+        });
+      }
+
+    
     return res.status(200).json({
       success: true,
-      message: "Attachment uploaded successfully",
+      message: "Attachments uploaded and URLs saved successfully",
       data: result
     });
   } catch (error) {

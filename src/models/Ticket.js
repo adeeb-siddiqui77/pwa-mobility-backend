@@ -46,6 +46,11 @@ const ticketSchema = new mongoose.Schema({
         patchNumber : {type : String},
         otherServices : {type : String}
     },
+    images : [
+        {
+            type : String
+        }
+    ],
    
     createdAt: {
         type: Date,
