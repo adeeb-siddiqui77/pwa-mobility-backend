@@ -293,81 +293,179 @@ export const createTicket = async (req, res) => {
 // };
 
 
+// export const updateTicket = async (req, res) => {
+//     try {
+//         const { ticketId } = req.params;
+//         let { data , tokenDetails} = req.body;
+
+//         // console.log("Update request received for ticketId:", ticketId, "with data:", data, "and tokenDetails:", tokenDetails);
+
+//         if (!ticketId) {
+//             return res.status(400).json({
+//                 error: 'Missing ticket ID',
+//                 message: 'Ticket ID is required in the URL'
+//             });
+//         }
+
+//         if (!data|| Object.keys(data).length === 0) {
+//             return res.status(400).json({
+//                 error: 'No data provided',
+//                 message: 'Request body is empty'
+//             });
+//         }
+
+//         // tokenDetails = await getValidAccessToken(tokenDetails);
+//         tokenDetails = await generateAccessToken({accessToken: null, expiresAt: null});
+//         console.log("Valid access token:", tokenDetails.accessToken);
+
+
+
+//         console.log("Data:", data);
+
+//         // Update in Zoho
+//         const config = {
+//             method: 'patch',
+//             url: `https://desk.zoho.in/api/v1/tickets/${ticketId}`,
+//             headers: {
+//                 'orgId': process.env.ZOHO_ORG_ID,
+//                 'Authorization': `Zoho-oauthtoken ${tokenDetails.accessToken}`,
+//                 'Content-Type': 'application/json'
+//             },
+//             data: data
+//         };
+
+//         const zohoResponse = await axios(config);
+//         console.log("Zoho update response:", zohoResponse.data);
+
+//         const updatedMongoTicket = await Ticket.findOneAndUpdate(
+//             { zohoTicketId: ticketId },
+//             {
+//                 $set: {
+//                     ...data,
+//                     updatedAt: new Date()
+//                 }
+//             },
+//             { new: true }
+//         );
+
+//         if (!updatedMongoTicket) {
+//             return res.status(404).json({
+//                 error: 'Ticket not found in local database',
+//                 message: 'The ticket was updated in Zoho but could not be found in the local database'
+//             });
+//         }
+
+//         res.json({
+//             data : updatedMongoTicket,
+//             message: "Ticket updated successfully"
+//         });
+//     } catch (error) {
+//         console.error('Error updating ticket:', error);
+//         res.status(error.response?.status || 500).json({
+//             error: 'Failed to update ticket',
+//             message: error.response?.data?.message || error.message
+//         });
+//     }
+// };
+
+
+
 export const updateTicket = async (req, res) => {
     try {
-        const { ticketId } = req.params;
-        let { data , tokenDetails} = req.body;
-
-        // console.log("Update request received for ticketId:", ticketId, "with data:", data, "and tokenDetails:", tokenDetails);
-
-        if (!ticketId) {
-            return res.status(400).json({
-                error: 'Missing ticket ID',
-                message: 'Ticket ID is required in the URL'
-            });
-        }
-
-        if (!data|| Object.keys(data).length === 0) {
-            return res.status(400).json({
-                error: 'No data provided',
-                message: 'Request body is empty'
-            });
-        }
-
-        // tokenDetails = await getValidAccessToken(tokenDetails);
-        tokenDetails = await generateAccessToken({accessToken: null, expiresAt: null});
-        console.log("Valid access token:", tokenDetails.accessToken);
-
-
-
-        console.log("Data:", data);
-
-        // Update in Zoho
-        const config = {
-            method: 'patch',
-            url: `https://desk.zoho.in/api/v1/tickets/${ticketId}`,
-            headers: {
-                'orgId': process.env.ZOHO_ORG_ID,
-                'Authorization': `Zoho-oauthtoken ${tokenDetails.accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            data: data
-        };
-
-        const zohoResponse = await axios(config);
-        console.log("Zoho update response:", zohoResponse.data);
-
-        const updatedMongoTicket = await Ticket.findOneAndUpdate(
-            { zohoTicketId: ticketId },
-            {
-                $set: {
-                    ...data,
-                    updatedAt: new Date()
-                }
-            },
-            { new: true }
+      const { ticketId } = req.params;
+      let { data } = req.body;
+  
+      if (!ticketId) {
+        return res.status(400).json({ error: 'Missing ticket ID' });
+      }
+  
+      if (!data || Object.keys(data).length === 0) {
+        return res.status(400).json({ error: 'No data provided' });
+      }
+  
+      const tokenDetails = await generateAccessToken({
+        accessToken: null,
+        expiresAt: null
+      });
+  
+      const headers = {
+        orgId: process.env.ZOHO_ORG_ID,
+        Authorization: `Zoho-oauthtoken ${tokenDetails.accessToken}`,
+        'Content-Type': 'application/json'
+      };
+  
+      /** ------------------------------------
+       * 1️⃣ If CF exists, merge it properly
+       ------------------------------------- */
+      if (data.cf) {
+        const existingTicket = await axios.get(
+          `https://desk.zoho.in/api/v1/tickets/${ticketId}`,
+          { headers }
         );
-
-        if (!updatedMongoTicket) {
-            return res.status(404).json({
-                error: 'Ticket not found in local database',
-                message: 'The ticket was updated in Zoho but could not be found in the local database'
-            });
+  
+        const existingCF = existingTicket.data.cf || {};
+  
+        data.cf = {
+          ...existingCF,
+          ...data.cf
+        };
+      }
+  
+      /** ------------------------------------
+       * 2️⃣ Update Zoho Ticket
+       ------------------------------------- */
+      const zohoResponse = await axios.patch(
+        `https://desk.zoho.in/api/v1/tickets/${ticketId}`,
+        data,
+        { headers }
+      );
+  
+      /** ------------------------------------
+       * 3️⃣ Update Mongo safely
+       ------------------------------------- */
+      const updateQuery = {};
+  
+      Object.keys(data).forEach(key => {
+        if (key === 'cf') {
+          Object.keys(data.cf).forEach(cfKey => {
+            updateQuery[`cf.${cfKey}`] = data.cf[cfKey];
+          });
+        } else {
+          updateQuery[key] = data[key];
         }
-
-        res.json({
-            data : updatedMongoTicket,
-            message: "Ticket updated successfully"
+      });
+  
+      const updatedMongoTicket = await Ticket.findOneAndUpdate(
+        { zohoTicketId: ticketId },
+        {
+          $set: {
+            ...updateQuery,
+            updatedAt: new Date()
+          }
+        },
+        { new: true }
+      );
+  
+      if (!updatedMongoTicket) {
+        return res.status(404).json({
+          error: 'Ticket not found locally'
         });
+      }
+  
+      res.json({
+        data: updatedMongoTicket,
+        message: 'Ticket updated successfully'
+      });
+  
     } catch (error) {
-        console.error('Error updating ticket:', error);
-        res.status(error.response?.status || 500).json({
-            error: 'Failed to update ticket',
-            message: error.response?.data?.message || error.message
-        });
+      console.error('Error updating ticket:', error.response?.data || error);
+      res.status(error.response?.status || 500).json({
+        error: 'Failed to update ticket',
+        message: error.response?.data?.message || error.message
+      });
     }
-};
-
+  };
+  
 
 
 export const updateTicketinMongo = async (req, res) => {
